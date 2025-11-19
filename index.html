@@ -167,6 +167,21 @@
       color: var(--text);
     }
 
+    .faq-video {
+      margin-top: 0.3rem;
+      font-size: 0.8rem;
+    }
+
+    .faq-video a {
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .faq-video a:hover {
+      text-decoration: underline;
+    }
+
     .faq-tags {
       margin-top: 0.35rem;
       font-size: 0.78rem;
@@ -237,6 +252,9 @@
 
       <label for="answerInput" style="margin-top:.6rem;">Answer / steps</label>
       <textarea id="answerInput"></textarea>
+
+      <label for="videoInput" style="margin-top:.6rem;">Video link (optional)</label>
+      <input id="videoInput" type="text" placeholder="https://youtube.com/..." />
 
       <label for="tagsInput" style="margin-top:.6rem;">Tags (comma separated)</label>
       <input id="tagsInput" type="text" />
@@ -352,6 +370,7 @@
   const faqForm = document.getElementById("faqForm");
   const questionInput = document.getElementById("questionInput");
   const answerInput = document.getElementById("answerInput");
+  const videoInput = document.getElementById("videoInput");
   const tagsInput = document.getElementById("tagsInput");
   const clearFormButton = document.getElementById("clearFormButton");
   const searchInput = document.getElementById("searchInput");
@@ -366,7 +385,7 @@
     let items = faqItems;
     if (q) {
       items = items.filter(item => {
-        const text = (item.question + " " + item.answer + " " + item.tags.join(" "))
+        const text = (item.question + " " + item.answer + " " + (item.video || "") + " " + item.tags.join(" "))
           .toLowerCase();
         return text.includes(q);
       });
@@ -387,7 +406,7 @@
       const header = document.createElement("div");
       header.className = "faq-header";
 
-      const title = document.createElement("div");
+      const title = document.createElement("strong");
       title.textContent = item.question;
 
       const badge = document.createElement("div");
@@ -397,6 +416,25 @@
       const answer = document.createElement("div");
       answer.className = "faq-answer";
       answer.textContent = item.answer || "No answer saved yet.";
+
+      header.appendChild(title);
+      header.appendChild(badge);
+      wrap.appendChild(header);
+      wrap.appendChild(answer);
+
+      if (item.video) {
+        const vid = document.createElement("div");
+        vid.className = "faq-video";
+
+        // Basic safety: if user didn't prefix with http, add it
+        let href = item.video.trim();
+        if (href && !/^https?:\/\//i.test(href)) {
+          href = "https://" + href;
+        }
+
+        vid.innerHTML = `Video: <a href="${href}" target="_blank" rel="noopener">${item.video}</a>`;
+        wrap.appendChild(vid);
+      }
 
       const tags = document.createElement("div");
       tags.className = "faq-tags";
@@ -410,10 +448,6 @@
       logBtn.addEventListener("click", () => incrementCount(item.id));
       actions.appendChild(logBtn);
 
-      header.appendChild(title);
-      header.appendChild(badge);
-      wrap.appendChild(header);
-      wrap.appendChild(answer);
       wrap.appendChild(tags);
       wrap.appendChild(actions);
 
@@ -435,6 +469,7 @@
           id: docSnap.id,
           question: data.question || "",
           answer: data.answer || "",
+          video: data.video || "",
           tags: Array.isArray(data.tags) ? data.tags : [],
           count: data.count || 0,
           createdAt: data.createdAt || 0
@@ -468,6 +503,7 @@
     if (!question) return;
 
     const answer = answerInput.value.trim();
+    const video = videoInput.value.trim();
     const tags = tagsInput.value
       .split(",")
       .map(t => t.trim())
@@ -478,6 +514,7 @@
       const docRef = await addDoc(faqsCol, {
         question,
         answer,
+        video,
         tags,
         count: 0,
         createdAt
@@ -487,6 +524,7 @@
         id: docRef.id,
         question,
         answer,
+        video,
         tags,
         count: 0,
         createdAt

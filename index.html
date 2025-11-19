@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Work FAQ Logger (Cloud)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: light dark;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+    }
+    .app {
+      max-width: 900px;
+      width: 100%;
+      padding: 1.5rem;
+    }
+    .card {
+      background: #020617;
+      border-radius: 1rem;
+      padding: 1.25rem 1.5rem;
+      border: 1px solid #1e293b;
+      margin-bottom: 1.5rem;
+    }
+    h1 { margin: 0 0 .25rem 0; font-size: 1.4rem; }
+    .muted { color: #9ca3af; font-size: .9rem; }
+    label { display: block; margin-bottom: .25rem; font-size: .9rem; }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: .5rem .6rem;
+      border-radius: .5rem;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      font: inherit;
+      box-sizing: border-box;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .row { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: .75rem; }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: .45rem .9rem;
+      font: inherit;
+      cursor: pointer;
+      background: #38bdf8;
+      color: #020617;
+    }
+    button.secondary {
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #1f2937;
+    }
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      max-height: 420px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+    .faq-item {
+      border-radius: .75rem;
+      border: 1px solid #1f2937;
+      padding: .75rem .9rem;
+      background: radial-gradient(circle at top left, rgba(56,189,248,.12), transparent 55%);
+    }
+    .faq-header {
+      display: flex;
+      justify-content: space-between;
+      gap: .75rem;
+      align-items: baseline;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      padding: .15rem .55rem;
+      border-radius: 999px;
+      border: 1px solid #1e293b;
+      background: #0f172a;
+      font-size: .75rem;
+      color: #9ca3af;
+    }
+    .faq-answer {
+      margin-top: .4rem;
+      white-space: pre-line;
+      font-size: .9rem;
+      color: #d1d5db;
+    }
+    .faq-tags {
+      margin-top: .35rem;
+      font-size: .78rem;
+      color: #9ca3af;
+    }
+    .faq-actions {
+      margin-top: .6rem;
+    }
+    .error { color: #fca5a5; font-size: .8rem; margin-top: .3rem; }
+    .hint { color: #9ca3af; font-size: .8rem; margin-top: .3rem; }
+    .status { color: #a5b4fc; font-size: .8rem; margin-top: .4rem; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="card">
+    <h1>Work FAQ Logger</h1>
+    <p class="muted">Cloud-synced FAQs you can use from any device.</p>
+
+    <form id="faqForm">
+      <label for="questionInput">Question</label>
+      <input id="questionInput" type="text" required />
+
+      <label for="answerInput" style="margin-top:.6rem;">Answer / steps</label>
+      <textarea id="answerInput"></textarea>
+
+      <label for="tagsInput" style="margin-top:.6rem;">Tags (comma separated)</label>
+      <input id="tagsInput" type="text" />
+
+      <div class="row">
+        <button type="submit">Save FAQ</button>
+        <button type="button" class="secondary" id="clearFormButton">Clear</button>
+      </div>
+
+      <div id="formHint" class="hint"></div>
+      <div id="errorBox" class="error"></div>
+      <div id="statusBox" class="status"></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <label for="searchInput">Search</label>
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Search questions, answers, or tags…"
+    />
+    <button type="button" class="secondary" id="clearSearchButton" style="margin-top:.6rem;">
+      Clear search
+    </button>
+
+    <div class="faq-list" id="faqList"></div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    addDoc,
+    doc,
+    updateDoc,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+  const statusBox = document.getElementById("statusBox");
+  const errorBox = document.getElementById("errorBox");
+  function setStatus(msg) {
+    statusBox.textContent = msg;
+  }
+  function showError(msg) {
+    console.error(msg);
+    errorBox.textContent = msg;
+  }
+
+  setStatus("Initialising Firebase…");
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyADy9Kac_a_F_4v2BkAZkD1WhDTqCTACuE",
+    authDomain: "work-faq-logger.firebaseapp.com",
+    projectId: "work-faq-logger",
+    storageBucket: "work-faq-logger.firebasestorage.app",
+    messagingSenderId: "141636449990",
+    appId: "1:141636449990:web:acfbd248f42cfda629c9c7",
+    measurementId: "G-V66S24L0DV"
+  };
+
+  let db;
+  let faqsCol;
+  let faqItems = [];
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    faqsCol = collection(db, "faqs");
+    setStatus("Firebase initialised. Loading FAQs…");
+  } catch (e) {
+    showError("Firebase init failed: " + e);
+  }
+
+  const faqForm = document.getElementById("faqForm");
+  const questionInput = document.getElementById("questionInput");
+  const answerInput = document.getElementById("answerInput");
+  const tagsInput = document.getElementById("tagsInput");
+  const clearFormButton = document.getElementById("clearFormButton");
+  const searchInput = document.getElementById("searchInput");
+  const clearSearchButton = document.getElementById("clearSearchButton");
+  const faqList = document.getElementById("faqList");
+  const formHint = document.getElementById("formHint");
+
+  function renderList() {
+    const q = searchInput.value.toLowerCase().trim();
+    faqList.innerHTML = "";
+
+    let items = faqItems;
+    if (q) {
+      items = items.filter(item => {
+        const text = (item.question + " " + item.answer + " " + item.tags.join(" "))
+          .toLowerCase();
+        return text.includes(q);
+      });
+    }
+
+    if (!items.length) {
+      const p = document.createElement("p");
+      p.className = "muted";
+      p.textContent = faqItems.length ? "No FAQs match your search." : "No FAQs yet. Add one above.";
+      faqList.appendChild(p);
+      return;
+    }
+
+    items.forEach(item => {
+      const wrap = document.createElement("div");
+      wrap.className = "faq-item";
+
+      const header = document.createElement("div");
+      header.className = "faq-header";
+
+      const title = document.createElement("div");
+      title.textContent = item.question;
+
+      const badge = document.createElement("div");
+      badge.className = "badge";
+      badge.textContent = (item.count || 0) + " times";
+
+      const answer = document.createElement("div");
+      answer.className = "faq-answer";
+      answer.textContent = item.answer || "No answer saved yet.";
+
+      const tags = document.createElement("div");
+      tags.className = "faq-tags";
+      tags.textContent = item.tags.length ? item.tags.join(", ") : "untagged";
+
+      const actions = document.createElement("div");
+      actions.className = "faq-actions";
+      const logBtn = document.createElement("button");
+      logBtn.type = "button";
+      logBtn.textContent = "Log occurrence";
+      logBtn.addEventListener("click", () => incrementCount(item.id));
+      actions.appendChild(logBtn);
+
+      header.appendChild(title);
+      header.appendChild(badge);
+      wrap.appendChild(header);
+      wrap.appendChild(answer);
+      wrap.appendChild(tags);
+      wrap.appendChild(actions);
+
+      faqList.appendChild(wrap);
+    });
+  }
+
+  async function loadFAQs() {
+    if (!faqsCol) {
+      showError("Firestore not initialised.");
+      return;
+    }
+    try {
+      const snap = await getDocs(query(faqsCol, orderBy("createdAt", "desc")));
+      faqItems = [];
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        faqItems.push({
+          id: docSnap.id,
+          question: data.question || "",
+          answer: data.answer || "",
+          tags: Array.isArray(data.tags) ? data.tags : [],
+          count: data.count || 0,
+          createdAt: data.createdAt || 0
+        });
+      });
+      setStatus("Loaded " + faqItems.length + " FAQs from cloud.");
+      renderList();
+    } catch (e) {
+      showError("Failed to load FAQs: " + e.message);
+      setStatus("Load failed.");
+    }
+  }
+
+  async function incrementCount(id) {
+    const item = faqItems.find(f => f.id === id);
+    if (!item) return;
+    const newCount = (item.count || 0) + 1;
+    item.count = newCount;
+    try {
+      await updateDoc(doc(faqsCol, id), { count: newCount });
+      renderList();
+      setStatus("Logged occurrence.");
+    } catch (e) {
+      showError("Failed to log occurrence: " + e.message);
+    }
+  }
+
+  faqForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const question = questionInput.value.trim();
+    if (!question) return;
+
+    const answer = answerInput.value.trim();
+    const tags = tagsInput.value
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean);
+    const createdAt = Date.now();
+
+    try {
+      const docRef = await addDoc(faqsCol, {
+        question,
+        answer,
+        tags,
+        count: 0,
+        createdAt
+      });
+
+      faqItems.unshift({
+        id: docRef.id,
+        question,
+        answer,
+        tags,
+        count: 0,
+        createdAt
+      });
+
+      formHint.textContent = "FAQ saved.";
+      setTimeout(() => { formHint.textContent = ""; }, 2000);
+
+      faqForm.reset();
+      renderList();
+      setStatus("FAQ saved to cloud.");
+    } catch (e) {
+      showError("Failed to save FAQ: " + e.message);
+      setStatus("Save failed.");
+    }
+  });
+
+  clearFormButton.addEventListener("click", () => {
+    faqForm.reset();
+    formHint.textContent = "";
+    setStatus("Form cleared.");
+  });
+
+  searchInput.addEventListener("input", renderList);
+
+  clearSearchButton.addEventListener("click", () => {
+    searchInput.value = "";
+    renderList();
+    setStatus("Search cleared.");
+  });
+
+  loadFAQs();
+</script>
+
+</body>
+</html>

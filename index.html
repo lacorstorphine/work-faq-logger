@@ -190,6 +190,9 @@
 
     .faq-actions {
       margin-top: 0.6rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
     .error {
@@ -357,6 +360,7 @@
   let db;
   let faqsCol;
   let faqItems = [];
+  let editingId = null; // track which FAQ is being edited
 
   try {
     const app = initializeApp(firebaseConfig);
@@ -426,7 +430,6 @@
         const vid = document.createElement("div");
         vid.className = "faq-video";
 
-        // Basic safety: if user didn't prefix with http, add it
         let href = item.video.trim();
         if (href && !/^https?:\/\//i.test(href)) {
           href = "https://" + href;
@@ -442,11 +445,20 @@
 
       const actions = document.createElement("div");
       actions.className = "faq-actions";
+
       const logBtn = document.createElement("button");
       logBtn.type = "button";
       logBtn.textContent = "Log occurrence";
       logBtn.addEventListener("click", () => incrementCount(item.id));
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "secondary";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", () => loadForEdit(item.id));
+
       actions.appendChild(logBtn);
+      actions.appendChild(editBtn);
 
       wrap.appendChild(tags);
       wrap.appendChild(actions);
@@ -497,6 +509,24 @@
     }
   }
 
+  function loadForEdit(id) {
+    const item = faqItems.find(f => f.id === id);
+    if (!item) return;
+    editingId = id;
+    questionInput.value = item.question;
+    answerInput.value = item.answer;
+    videoInput.value = item.video || "";
+    tagsInput.value = item.tags.join(", ");
+    formHint.textContent = "Editing existing FAQ. Saving will update it.";
+    setStatus("Editing FAQ.");
+    questionInput.focus();
+  }
+
+  function resetEditing() {
+    editingId = null;
+    formHint.textContent = "";
+  }
+
   faqForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const question = questionInput.value.trim();
@@ -508,34 +538,58 @@
       .split(",")
       .map(t => t.trim())
       .filter(Boolean);
-    const createdAt = Date.now();
 
     try {
-      const docRef = await addDoc(faqsCol, {
-        question,
-        answer,
-        video,
-        tags,
-        count: 0,
-        createdAt
-      });
+      if (editingId) {
+        // update existing FAQ
+        await updateDoc(doc(faqsCol, editingId), {
+          question,
+          answer,
+          video,
+          tags
+        });
 
-      faqItems.unshift({
-        id: docRef.id,
-        question,
-        answer,
-        video,
-        tags,
-        count: 0,
-        createdAt
-      });
+        const idx = faqItems.findIndex(f => f.id === editingId);
+        if (idx !== -1) {
+          faqItems[idx].question = question;
+          faqItems[idx].answer = answer;
+          faqItems[idx].video = video;
+          faqItems[idx].tags = tags;
+        }
 
-      formHint.textContent = "FAQ saved.";
-      setTimeout(() => { formHint.textContent = ""; }, 2000);
+        formHint.textContent = "FAQ updated.";
+        setStatus("FAQ updated in cloud.");
+        setTimeout(() => { if (formHint.textContent === "FAQ updated.") formHint.textContent = ""; }, 2000);
+        editingId = null;
+      } else {
+        // create new FAQ
+        const createdAt = Date.now();
+        const docRef = await addDoc(faqsCol, {
+          question,
+          answer,
+          video,
+          tags,
+          count: 0,
+          createdAt
+        });
+
+        faqItems.unshift({
+          id: docRef.id,
+          question,
+          answer,
+          video,
+          tags,
+          count: 0,
+          createdAt
+        });
+
+        formHint.textContent = "FAQ saved.";
+        setStatus("FAQ saved to cloud.");
+        setTimeout(() => { if (formHint.textContent === "FAQ saved.") formHint.textContent = ""; }, 2000);
+      }
 
       faqForm.reset();
       renderList();
-      setStatus("FAQ saved to cloud.");
     } catch (e) {
       showError("Failed to save FAQ: " + e.message);
       setStatus("Save failed.");
@@ -544,7 +598,7 @@
 
   clearFormButton.addEventListener("click", () => {
     faqForm.reset();
-    formHint.textContent = "";
+    resetEditing();
     setStatus("Form cleared.");
   });
 

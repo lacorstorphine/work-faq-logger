@@ -412,7 +412,7 @@
 
   // ===== ADMIN HANDLING =====
   function updateAdminUI() {
-    adminToggleBtn.textContent = isAdmin ? "Admin: on" : "Admin login";
+    adminToggleBtn.textContent = isAdmin ? "Log out (admin)" : "Admin login";
     setStatus(isAdmin ? "Admin mode enabled." : "Admin mode disabled.");
     renderList();
   }
@@ -537,34 +537,28 @@
       logBtn.type = "button";
       logBtn.textContent = "Log occurrence";
       logBtn.addEventListener("click", () => incrementCount(item.id));
-
-      const editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.className = "secondary";
-      editBtn.textContent = "Edit";
-      editBtn.addEventListener("click", () => {
-        if (!isAdmin) {
-          window.alert("Only admin can edit FAQs.");
-          return;
-        }
-        loadForEdit(item.id);
-      });
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className = "danger-btn";
-      deleteBtn.textContent = "Delete";
-      deleteBtn.addEventListener("click", () => {
-        if (!isAdmin) {
-          window.alert("Only admin can delete FAQs.");
-          return;
-        }
-        deleteFAQ(item.id, item.question);
-      });
-
       actions.appendChild(logBtn);
-      actions.appendChild(editBtn);
-      actions.appendChild(deleteBtn);
+
+      if (isAdmin) {
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className = "secondary";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => {
+          loadForEdit(item.id);
+        });
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "danger-btn";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => {
+          deleteFAQ(item.id, item.question);
+        });
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+      }
 
       wrap.appendChild(tags);
       wrap.appendChild(actions);

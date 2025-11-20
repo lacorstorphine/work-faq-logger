@@ -65,6 +65,19 @@
       margin-bottom: 0.75rem;
     }
 
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .header-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
     h1 {
       margin: 0 0 0.25rem 0;
       font-size: 1.4rem;
@@ -213,13 +226,12 @@
       margin-top: 0.4rem;
     }
 
-    .header-left {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
+    .theme-toggle-btn {
+      font-size: 0.8rem;
+      padding: 0.3rem 0.7rem;
     }
 
-    .theme-toggle-btn {
+    .admin-toggle-btn {
       font-size: 0.8rem;
       padding: 0.3rem 0.7rem;
     }
@@ -244,9 +256,14 @@
         <h1>Work FAQ Logger</h1>
         <p class="muted">Cloud-synced FAQs you can use from any device.</p>
       </div>
-      <button type="button" class="secondary theme-toggle-btn" id="themeToggle">
-        Toggle theme
-      </button>
+      <div class="header-right">
+        <button type="button" class="secondary theme-toggle-btn" id="themeToggle">
+          Toggle theme
+        </button>
+        <button type="button" class="secondary admin-toggle-btn" id="adminToggle">
+          Admin login
+        </button>
+      </div>
     </div>
 
     <form id="faqForm">
@@ -302,7 +319,7 @@
     orderBy
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-  // THEME HANDLING
+  // ===== THEME HANDLING =====
   const THEME_KEY = "faq_theme_preference";
   const htmlEl = document.documentElement;
   const themeToggleBtn = document.getElementById("themeToggle");
@@ -319,10 +336,8 @@
       applyTheme(stored);
       return;
     }
-
     const prefersDark = window.matchMedia &&
       window.matchMedia("(prefers-color-scheme: dark)").matches;
-
     applyTheme(prefersDark ? "dark" : "light");
   }
 
@@ -333,7 +348,7 @@
 
   initTheme();
 
-  // STATUS / ERROR
+  // ===== STATUS / ERROR =====
   const statusBox = document.getElementById("statusBox");
   const errorBox = document.getElementById("errorBox");
   function setStatus(msg) {
@@ -346,7 +361,7 @@
 
   setStatus("Initialising Firebase…");
 
-  // YOUR FIREBASE CONFIG
+  // ===== FIREBASE CONFIG =====
   const firebaseConfig = {
     apiKey: "AIzaSyADy9Kac_a_F_4v2BkAZkD1WhDTqCTACuE",
     authDomain: "work-faq-logger.firebaseapp.com",
@@ -360,7 +375,11 @@
   let db;
   let faqsCol;
   let faqItems = [];
-  let editingId = null; // track which FAQ is being edited
+  let editingId = null;   // which FAQ is being edited (if any)
+  let isAdmin = false;    // admin mode flag
+
+  // CHANGE THIS PASSWORD TO WHATEVER YOU LIKE
+  const ADMIN_PASSWORD = "changeme";
 
   try {
     const app = initializeApp(firebaseConfig);
@@ -381,7 +400,66 @@
   const clearSearchButton = document.getElementById("clearSearchButton");
   const faqList = document.getElementById("faqList");
   const formHint = document.getElementById("formHint");
+  const adminToggleBtn = document.getElementById("adminToggle");
 
+  // ===== ADMIN HANDLING =====
+  function updateAdminUI() {
+    adminToggleBtn.textContent = isAdmin ? "Admin: on" : "Admin login";
+    setStatus(isAdmin ? "Admin mode enabled." : "Admin mode disabled.");
+    renderList();
+  }
+
+  adminToggleBtn.addEventListener("click", () => {
+    if (!isAdmin) {
+      const pw = window.prompt("Enter admin password:");
+      if (pw === ADMIN_PASSWORD) {
+        isAdmin = true;
+        updateAdminUI();
+      } else if (pw !== null) {
+        window.alert("Incorrect password.");
+      }
+    } else {
+      isAdmin = false;
+      editingId = null;
+      faqForm.reset();
+      formHint.textContent = "";
+      updateAdminUI();
+    }
+  });
+
+  // ===== DUPLICATE CHECKING =====
+  function normaliseText(str) {
+    return str.toLowerCase().replace(/\s+/g, " ").trim();
+  }
+
+  function stringSimilarity(a, b) {
+    const aTokens = new Set(normaliseText(a).split(" ").filter(Boolean));
+    const bTokens = new Set(normaliseText(b).split(" ").filter(Boolean));
+    if (aTokens.size === 0 || bTokens.size === 0) return 0;
+
+    let intersection = 0;
+    aTokens.forEach(tok => {
+      if (bTokens.has(tok)) intersection++;
+    });
+
+    const union = aTokens.size + bTokens.size - intersection;
+    if (union === 0) return 0;
+    return intersection / union;
+  }
+
+  function findSimilarQuestions(question, threshold, excludeId) {
+    const matches = [];
+    faqItems.forEach(item => {
+      if (excludeId && item.id === excludeId) return;
+      const sim = stringSimilarity(question, item.question || "");
+      if (sim >= threshold) {
+        matches.push({ item, sim });
+      }
+    });
+    return matches;
+  }
+
+  // ===== RENDERING =====
   function renderList() {
     const q = searchInput.value.toLowerCase().trim();
     faqList.innerHTML = "";
@@ -455,7 +533,14 @@
       editBtn.type = "button";
       editBtn.className = "secondary";
       editBtn.textContent = "Edit";
-      editBtn.addEventListener("click", () => loadForEdit(item.id));
+      editBtn.disabled = !isAdmin;
+      editBtn.addEventListener("click", () => {
+        if (!isAdmin) {
+          window.alert("Only admin can edit FAQs.");
+          return;
+        }
+        loadForEdit(item.id);
+      });
 
       actions.appendChild(logBtn);
       actions.appendChild(editBtn);
@@ -467,6 +552,7 @@
     });
   }
 
+  // ===== DATA LOAD / UPDATE =====
   async function loadFAQs() {
     if (!faqsCol) {
       showError("Firestore not initialised.");
@@ -527,8 +613,15 @@
     formHint.textContent = "";
   }
 
+  // ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK) =====
   faqForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    if (!isAdmin) {
+      window.alert("Only admin can create or edit FAQs.");
+      return;
+    }
+
     const question = questionInput.value.trim();
     if (!question) return;
 
@@ -538,6 +631,25 @@
       .split(",")
       .map(t => t.trim())
       .filter(Boolean);
+
+    // duplicate check (75% similarity threshold on question text)
+    const threshold = 0.75;
+    const similar = findSimilarQuestions(question, threshold, editingId);
+    if (similar.length > 0) {
+      const list = similar
+        .slice(0, 5)
+        .map(s => `• ${s.item.question} (${Math.round(s.sim * 100)}% similar)`)
+        .join("\n");
+      const proceed = window.confirm(
+        "This question looks similar to existing FAQ(s):\n\n" +
+        list +
+        "\n\nSave anyway?"
+      );
+      if (!proceed) {
+        setStatus("Save cancelled due to possible duplicate.");
+        return;
+      }
+    }
 
     try {
       if (editingId) {
@@ -559,7 +671,9 @@
 
         formHint.textContent = "FAQ updated.";
         setStatus("FAQ updated in cloud.");
-        setTimeout(() => { if (formHint.textContent === "FAQ updated.") formHint.textContent = ""; }, 2000);
+        setTimeout(() => {
+          if (formHint.textContent === "FAQ updated.") formHint.textContent = "";
+        }, 2000);
         editingId = null;
       } else {
         // create new FAQ
@@ -585,7 +699,9 @@
 
         formHint.textContent = "FAQ saved.";
         setStatus("FAQ saved to cloud.");
-        setTimeout(() => { if (formHint.textContent === "FAQ saved.") formHint.textContent = ""; }, 2000);
+        setTimeout(() => {
+          if (formHint.textContent === "FAQ saved.") formHint.textContent = "";
+        }, 2000);
       }
 
       faqForm.reset();

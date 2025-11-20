@@ -375,8 +375,9 @@
   let db;
   let faqsCol;
   let faqItems = [];
-  let editingId = null;   // which FAQ is being edited (if any)
-  let isAdmin = false;    // admin mode flag
+  let editingId = null;             // which FAQ is being edited (if any)
+  let isAdmin = false;              // admin mode flag
+  let lastApprovedQuestion = null;  // hysteresis for dupe warning
 
   // CHANGE THIS PASSWORD TO WHATEVER YOU LIKE
   const ADMIN_PASSWORD = "changeme";
@@ -423,6 +424,7 @@
       editingId = null;
       faqForm.reset();
       formHint.textContent = "";
+      lastApprovedQuestion = null;
       updateAdminUI();
     }
   });
@@ -533,7 +535,6 @@
       editBtn.type = "button";
       editBtn.className = "secondary";
       editBtn.textContent = "Edit";
-      editBtn.disabled = !isAdmin;
       editBtn.addEventListener("click", () => {
         if (!isAdmin) {
           window.alert("Only admin can edit FAQs.");
@@ -613,14 +614,9 @@
     formHint.textContent = "";
   }
 
-  // ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK) =====
+  // ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK + HYSTERESIS) =====
   faqForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    if (!isAdmin) {
-      window.alert("Only admin can create or edit FAQs.");
-      return;
-    }
 
     const question = questionInput.value.trim();
     if (!question) return;
@@ -632,28 +628,47 @@
       .map(t => t.trim())
       .filter(Boolean);
 
-    // duplicate check (75% similarity threshold on question text)
-    const threshold = 0.75;
-    const similar = findSimilarQuestions(question, threshold, editingId);
-    if (similar.length > 0) {
-      const list = similar
-        .slice(0, 5)
-        .map(s => `• ${s.item.question} (${Math.round(s.sim * 100)}% similar)`)
-        .join("\n");
-      const proceed = window.confirm(
-        "This question looks similar to existing FAQ(s):\n\n" +
-        list +
-        "\n\nSave anyway?"
-      );
-      if (!proceed) {
-        setStatus("Save cancelled due to possible duplicate.");
-        return;
+    // If we're editing an existing FAQ, only admin can do that
+    if (editingId && !isAdmin) {
+      window.alert("Only admin can edit existing FAQs.");
+      return;
+    }
+
+    const questionNorm = normaliseText(question);
+
+    // Only run dupe warning if this question text hasn't already been approved
+    if (questionNorm !== lastApprovedQuestion) {
+      const softThreshold = 0.6;
+      const hardThreshold = 0.85;
+
+      const similarAll = findSimilarQuestions(question, softThreshold, editingId);
+      if (similarAll.length > 0) {
+        const similarHard = similarAll.filter(s => s.sim >= hardThreshold);
+        const useList = (similarHard.length > 0 ? similarHard : similarAll).slice(0, 5);
+
+        const list = useList
+          .map(s => `• ${s.item.question} (${Math.round(s.sim * 100)}% similar)`)
+          .join("\n");
+
+        const proceed = window.confirm(
+          "This question looks similar to existing FAQ(s):\n\n" +
+          list +
+          "\n\nSave anyway?"
+        );
+
+        if (!proceed) {
+          setStatus("Save cancelled due to possible duplicate.");
+          return;
+        }
+
+        // Remember this exact question text as "approved" so we don't nag again
+        lastApprovedQuestion = questionNorm;
       }
     }
 
     try {
       if (editingId) {
-        // update existing FAQ
+        // update existing FAQ (admin only, checked above)
         await updateDoc(doc(faqsCol, editingId), {
           question,
           answer,
@@ -676,7 +691,7 @@
         }, 2000);
         editingId = null;
       } else {
-        // create new FAQ
+        // create new FAQ (allowed for everyone)
         const createdAt = Date.now();
         const docRef = await addDoc(faqsCol, {
           question,
@@ -705,6 +720,7 @@
       }
 
       faqForm.reset();
+      resetEditing();
       renderList();
     } catch (e) {
       showError("Failed to save FAQ: " + e.message);
@@ -715,6 +731,7 @@
   clearFormButton.addEventListener("click", () => {
     faqForm.reset();
     resetEditing();
+    lastApprovedQuestion = null;
     setStatus("Form cleared.");
   });
 

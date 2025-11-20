@@ -134,6 +134,12 @@
       border: 1px solid var(--border);
     }
 
+    .danger-btn {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
     .faq-list {
       display: flex;
       flex-direction: column;
@@ -315,6 +321,7 @@
     addDoc,
     doc,
     updateDoc,
+    deleteDoc,
     query,
     orderBy
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
@@ -543,8 +550,21 @@
         loadForEdit(item.id);
       });
 
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "danger-btn";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.addEventListener("click", () => {
+        if (!isAdmin) {
+          window.alert("Only admin can delete FAQs.");
+          return;
+        }
+        deleteFAQ(item.id, item.question);
+      });
+
       actions.appendChild(logBtn);
       actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
 
       wrap.appendChild(tags);
       wrap.appendChild(actions);
@@ -553,7 +573,7 @@
     });
   }
 
-  // ===== DATA LOAD / UPDATE =====
+  // ===== DATA LOAD / UPDATE / DELETE =====
   async function loadFAQs() {
     if (!faqsCol) {
       showError("Firestore not initialised.");
@@ -593,6 +613,28 @@
       setStatus("Logged occurrence.");
     } catch (e) {
       showError("Failed to log occurrence: " + e.message);
+    }
+  }
+
+  async function deleteFAQ(id, question) {
+    const confirmed = window.confirm(
+      `Delete this FAQ?\n\n"${question}"\n\nThis cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteDoc(doc(faqsCol, id));
+      faqItems = faqItems.filter(f => f.id !== id);
+      renderList();
+      setStatus("FAQ deleted.");
+      if (editingId === id) {
+        faqForm.reset();
+        editingId = null;
+        formHint.textContent = "";
+      }
+    } catch (e) {
+      showError("Failed to delete FAQ: " + e.message);
+      setStatus("Delete failed.");
     }
   }
 

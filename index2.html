@@ -74,16 +74,19 @@
       min-height: 100vh;
     }
 
-    .app {
-      max-width: 1100px;
-      width: 100%;
-      padding: 1.5rem;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      box-sizing: border-box;
-    }
+.app {
+  width: 90vw;              /* take up 90% of the viewport width */
+  max-width: 1600px;        /* optional: stops it getting *too* wide on huge screens */
+  padding: 1.5rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+  margin: 0 auto;           /* keeps it centred */
+}
+
+
 
     .card {
       background: var(--card-bg);

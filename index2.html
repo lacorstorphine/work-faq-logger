@@ -308,9 +308,15 @@
       font-size: 0.9rem;
     }
 
-    .top-faq-list li {
-      margin-bottom: 0.35rem;
-    }
+.top-faq-list li {
+  margin-bottom: 0.35rem;
+  cursor: pointer;
+}
+
+.top-faq-list li:hover {
+  text-decoration: underline;
+}
+
 
     /* Stack on small screens */
     @media (max-width: 800px) {
@@ -598,12 +604,21 @@
       return;
     }
 
-    items.forEach(item => {
-      const li = document.createElement("li");
-      li.textContent = `${item.question} (${item.count || 0})`;
-      topFaqList.appendChild(li);
+     items.forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = `${item.question} (${item.count || 0})`;
+
+    // When you click a top question, show it in the main list
+    li.addEventListener("click", () => {
+      searchInput.value = item.question;
+      renderList();
+      setStatus(`Showing results for: "${item.question}"`);
     });
-  }
+
+    topFaqList.appendChild(li);
+  });
+}
+
 
   // ===== DUPLICATE CHECKING =====
   function normaliseText(str) {

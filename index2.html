@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>BROADCAST MEDIA SYSTEMS FAQ Logger (Cloud)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* Snowflake container */
+    #snowContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 9999;
+    }
+
+    .snowflake {
+      position: absolute;
+      top: -10px;
+      color: white;
+      font-size: 0.8rem;
+      opacity: 0.8;
+      user-select: none;
+      animation-name: fall;
+      animation-timing-function: linear;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh);
+      }
+    }
+
+    :root {
+      /* default (dark) */
+      --bg: #0f172a;
+      --card-bg: #020617;
+      --border: #1e293b;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --danger: #fca5a5;
+      --status: #a5b4fc;
+    }
+
+    html[data-theme="light"] {
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --border: #d1d5db;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #0ea5e9;
+      --accent-soft: rgba(14, 165, 233, 0.08);
+      --danger: #b91c1c;
+      --status: #4f46e5;
+    }
+
+    html {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      max-width: 900px;
+      width: 100%;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 1rem;
+      padding: 1.25rem 1.5rem;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .header-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    h1 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.4rem;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font: inherit;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.45rem 0.9rem;
+      font: inherit;
+      cursor: pointer;
+      background: var(--accent);
+      color: #020617;
+    }
+
+    button.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .danger-btn {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 420px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+
+    .faq-item {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 0.75rem 0.9rem;
+      background: radial-gradient(circle at top left, var(--accent-soft), transparent 55%);
+    }
+
+    .faq-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      align-items: baseline;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.14);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    html[data-theme="light"] .badge {
+      background: rgba(243, 244, 246, 0.9);
+    }
+
+    .faq-answer {
+      margin-top: 0.4rem;
+      white-space: pre-line;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .faq-video {
+      margin-top: 0.3rem;
+      font-size: 0.8rem;
+    }
+
+    .faq-video a {
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .faq-video a:hover {
+      text-decoration: underline;
+    }
+
+    .faq-tags {
+      margin-top: 0.35rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .faq-actions {
+      margin-top: 0.6rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .error {
+      color: var(--danger);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+    }
+
+    .status {
+      color: var(--status);
+      font-size: 0.8rem;
+      margin-top: 0.4rem;
+    }
+
+    .theme-toggle-btn {
+      font-size: 0.8rem;
+      padding: 0.3rem 0.7rem;
+    }
+
+    .admin-toggle-btn {
+      font-size: 0.8rem;
+      padding: 0.3rem 0.7rem;
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 1rem;
+      }
+      h1 {
+        font-size: 1.2rem;
+      }
+    }
+
+    /* Layout for the search + top questions card */
+    .card-layout {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+    }
+
+    .card-main {
+      flex: 2 1 0;
+    }
+
+    .card-side {
+      flex: 1 1 220px;
+      border-left: 1px solid var(--border);
+      padding-left: 1rem;
+    }
+
+    .side-title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    .top-faq-list {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: 0.9rem;
+    }
+
+    .top-faq-list li {
+      margin-bottom: 0.35rem;
+    }
+
+    /* Stack on small screens */
+    @media (max-width: 800px) {
+      .card-layout {
+        flex-direction: column;
+      }
+
+      .card-side {
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding-left: 0;
+        padding-top: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="card">
+    <div class="card-header">
+      <div class="header-left">
+        <h1>BROADCAST AND MEDIA SYSTEMS FAQ LOGGER 🪵</h1>
+        <p class="muted">Cloud-synced FAQs you can use from any device.</p>
+      </div>
+      <div class="header-right">
+        <button type="button" class="secondary theme-toggle-btn" id="themeToggle">
+          Toggle theme
+        </button>
+        <button type="button" class="secondary admin-toggle-btn" id="adminToggle">
+          Admin login
+        </button>
+        <button type="button" class="secondary" id="xmasToggle">
+          🎅
+        </button>
+      </div>
+    </div>
+
+    <p class="hint" style="margin-top:0;">
+      Don’t enter names, IDs or other personal data. This is for general how-to steps only.
+    </p>
+
+    <form id="faqForm">
+      <label for="questionInput">Question</label>
+      <input id="questionInput" type="text" required placeholder="Ask your question..." />
+
+      <label for="answerInput" style="margin-top:.6rem;">Answer / steps</label>
+      <textarea id="answerInput" placeholder="Answer goes here..."></textarea>
+
+      <label for="videoInput" style="margin-top:.6rem;">Video link (optional)</label>
+      <input id="videoInput" type="text" placeholder="https://youtube.com/..." />
+
+      <label for="tagsInput" style="margin-top:.6rem;">Tags (comma separated)</label>
+      <input id="tagsInput" type="text" />
+
+      <div class="row">
+        <button type="submit">Save FAQ</button>
+        <button type="button" class="secondary" id="clearFormButton">Clear</button>
+      </div>
+
+      <div id="formHint" class="hint"></div>
+      <div id="errorBox" class="error"></div>
+      <div id="statusBox" class="status"></div>
+    </form>
+  </div>
+
+  <div class="card card-layout">
+    <div class="card-main">
+      <label for="searchInput">Search</label>
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Search questions, answers, or tags…"
+      />
+      <button
+        type="button"
+        class="secondary"
+        id="clearSearchButton"
+        style="margin-top:.6rem;"
+      >
+        Clear search
+      </button>
+
+      <div class="faq-list" id="faqList"></div>
+    </div>
+
+    <div class="card-side">
+      <h2 class="side-title">Top questions</h2>
+      <ol id="topFaqList" class="top-faq-list"></ol>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    addDoc,
+    doc,
+    updateDoc,
+    deleteDoc,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+  // ===== THEME HANDLING =====
+  const THEME_KEY = "faq_theme_preference";
+  const htmlEl = document.documentElement;
+  const themeToggleBtn = document.getElementById("themeToggle");
+
+  function applyTheme(theme) {
+    htmlEl.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+    themeToggleBtn.textContent = theme === "dark" ? "Light mode" : "Dark mode";
+  }
+
+  function initTheme() {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === "light" || stored === "dark") {
+      applyTheme(stored);
+      return;
+    }
+    const prefersDark = window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(prefersDark ? "dark" : "light");
+  }
+
+  themeToggleBtn.addEventListener("click", () => {
+    const current = htmlEl.getAttribute("data-theme") || "dark";
+    applyTheme(current === "dark" ? "light" : "dark");
+  });
+
+  initTheme();
+
+  // ===== STATUS / ERROR =====
+  const statusBox = document.getElementById("statusBox");
+  const errorBox = document.getElementById("errorBox");
+  function setStatus(msg) {
+    statusBox.textContent = msg;
+  }
+  function showError(msg) {
+    console.error(msg);
+    errorBox.textContent = msg;
+  }
+
+  setStatus("Initialising Firebase…");
+
+  // ===== FIREBASE CONFIG =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyADy9Kac_a_F_4v2BkAZkD1WhDTqCTACuE",
+    authDomain: "work-faq-logger.firebaseapp.com",
+    projectId: "work-faq-logger",
+    storageBucket: "work-faq-logger.firebasestorage.app",
+    messagingSenderId: "141636449990",
+    appId: "1:141636449990:web:acfbd248f42cfda629c9c7",
+    measurementId: "G-V66S24L0DV"
+  };
+
+  let db;
+  let faqsCol;
+  let faqItems = [];
+  let editingId = null;             // which FAQ is being edited (if any)
+  let isAdmin = false;              // admin mode flag
+  let lastApprovedQuestion = null;  // hysteresis for dupe warning
+
+  // CHANGE THIS PASSWORD TO WHATEVER YOU LIKE
+  const ADMIN_PASSWORD = "changeme";
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    faqsCol = collection(db, "faqs");
+    setStatus("Firebase initialised. Loading FAQs…");
+  } catch (e) {
+    showError("Firebase init failed: " + e);
+  }
+
+  const faqForm = document.getElementById("faqForm");
+  const questionInput = document.getElementById("questionInput");
+  const answerInput = document.getElementById("answerInput");
+  const videoInput = document.getElementById("videoInput");
+  const tagsInput = document.getElementById("tagsInput");
+  const clearFormButton = document.getElementById("clearFormButton");
+  const searchInput = document.getElementById("searchInput");
+  const clearSearchButton = document.getElementById("clearSearchButton");
+  const faqList = document.getElementById("faqList");
+  const formHint = document.getElementById("formHint");
+  const adminToggleBtn = document.getElementById("adminToggle");
+  const topFaqList = document.getElementById("topFaqList");
+  const xmasToggle = document.getElementById("xmasToggle");
+
+  // ===== CHRISTMAS MODE =====
+  let xmasEnabled = false;
+  let snowContainer = null;
+  let snowInterval = null;
+
+  function startSnow() {
+    if (snowContainer) return;
+
+    snowContainer = document.createElement("div");
+    snowContainer.id = "snowContainer";
+    document.body.appendChild(snowContainer);
+
+    snowInterval = setInterval(() => {
+      const flake = document.createElement("div");
+      flake.className = "snowflake";
+      flake.textContent = "❄";
+
+      const size = Math.random() * 1.2 + 0.4;
+      flake.style.fontSize = size + "rem";
+      flake.style.left = Math.random() * 100 + "vw";
+      flake.style.animationDuration = 4 + Math.random() * 6 + "s";
+
+      snowContainer.appendChild(flake);
+
+      setTimeout(() => flake.remove(), 12000);
+    }, 200);
+  }
+
+  function stopSnow() {
+    if (snowContainer) snowContainer.remove();
+    snowContainer = null;
+
+    if (snowInterval) clearInterval(snowInterval);
+    snowInterval = null;
+  }
+
+  xmasToggle.addEventListener("click", () => {
+    xmasEnabled = !xmasEnabled;
+
+    if (xmasEnabled) {
+      startSnow();
+      xmasToggle.textContent = "🎄";
+    } else {
+      stopSnow();
+      xmasToggle.textContent = "🎅";
+    }
+  });
+
+  // ===== ADMIN HANDLING =====
+  function updateAdminUI() {
+    adminToggleBtn.textContent = isAdmin ? "Log out (admin)" : "Admin login";
+    setStatus(isAdmin ? "Admin mode enabled." : "Admin mode disabled.");
+    renderList();
+  }
+
+  adminToggleBtn.addEventListener("click", () => {
+    if (!isAdmin) {
+      const pw = window.prompt("Enter admin password:");
+      if (pw === ADMIN_PASSWORD) {
+        isAdmin = true;
+        updateAdminUI();
+      } else if (pw !== null) {
+        window.alert("Incorrect password.");
+      }
+    } else {
+      isAdmin = false;
+      editingId = null;
+      faqForm.reset();
+      formHint.textContent = "";
+      lastApprovedQuestion = null;
+      updateAdminUI();
+    }
+  });
+
+  // ===== TOP QUESTIONS SIDEBAR =====
+  function renderTopFaqs() {
+    if (!topFaqList) return;
+
+    topFaqList.innerHTML = "";
+
+    const items = [...faqItems]
+      .filter(item => (item.count || 0) > 0)
+      .sort((a, b) => (b.count || 0) - (a.count || 0))
+      .slice(0, 5);
+
+    if (!items.length) {
+      const li = document.createElement("li");
+      li.textContent = "No logged questions yet.";
+      topFaqList.appendChild(li);
+      return;
+    }
+
+    items.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = `${item.question} (${item.count || 0})`;
+      topFaqList.appendChild(li);
+    });
+  }
+
+  // ===== DUPLICATE CHECKING =====
+  function normaliseText(str) {
+    return str.toLowerCase().replace(/\s+/g, " ").trim();
+  }
+
+  function stringSimilarity(a, b) {
+    const aTokens = new Set(normaliseText(a).split(" ").filter(Boolean));
+    const bTokens = new Set(normaliseText(b).split(" ").filter(Boolean));
+    if (aTokens.size === 0 || bTokens.size === 0) return 0;
+
+    let intersection = 0;
+    aTokens.forEach(tok => {
+      if (bTokens.has(tok)) intersection++;
+    });
+
+    const union = aTokens.size + bTokens.size - intersection;
+    if (union === 0) return 0;
+    return intersection / union;
+  }
+
+  function findSimilarQuestions(question, threshold, excludeId) {
+    const matches = [];
+    faqItems.forEach(item => {
+      if (excludeId && item.id === excludeId) return;
+      const sim = stringSimilarity(question, item.question || "");
+      if (sim >= threshold) {
+        matches.push({ item, sim });
+      }
+    });
+    return matches;
+  }
+
+  // ===== RENDERING =====
+  function renderList() {
+    const q = searchInput.value.toLowerCase().trim();
+    faqList.innerHTML = "";
+
+    let items = faqItems;
+    if (q) {
+      items = items.filter(item => {
+        const text = (item.question + " " + item.answer + " " + (item.video || "") + " " + item.tags.join(" "))
+          .toLowerCase();
+        return text.includes(q);
+      });
+    }
+
+    if (!items.length) {
+      const p = document.createElement("p");
+      p.className = "muted";
+      p.textContent = faqItems.length
+        ? "No FAQs match your search."
+        : "No FAQs yet. Add one above.";
+      faqList.appendChild(p);
+
+      renderTopFaqs();
+      return;
+    }
+
+    items.forEach(item => {
+      const wrap = document.createElement("div");
+      wrap.className = "faq-item";
+
+      const header = document.createElement("div");
+      header.className = "faq-header";
+
+      const title = document.createElement("strong");
+      title.textContent = item.question;
+
+      const badge = document.createElement("div");
+      badge.className = "badge";
+      badge.textContent = (item.count || 0) + " times";
+
+      const answer = document.createElement("div");
+      answer.className = "faq-answer";
+      answer.textContent = item.answer || "No answer saved yet.";
+
+      header.appendChild(title);
+      header.appendChild(badge);
+      wrap.appendChild(header);
+      wrap.appendChild(answer);
+
+      if (item.video) {
+        const vid = document.createElement("div");
+        vid.className = "faq-video";
+
+        let href = item.video.trim();
+        if (href && !/^https?:\/\//i.test(href)) {
+          href = "https://" + href;
+        }
+
+        const label = document.createTextNode("Video: ");
+        const link = document.createElement("a");
+        link.href = href;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = item.video;
+
+        vid.appendChild(label);
+        vid.appendChild(link);
+        wrap.appendChild(vid);
+      }
+
+      const tagsDiv = document.createElement("div");
+      tagsDiv.className = "faq-tags";
+      tagsDiv.textContent = item.tags.length ? item.tags.join(", ") : "untagged";
+
+      const actions = document.createElement("div");
+      actions.className = "faq-actions";
+
+      const logBtn = document.createElement("button");
+      logBtn.type = "button";
+      logBtn.textContent = "Log occurrence";
+      logBtn.addEventListener("click", () => incrementCount(item.id));
+      actions.appendChild(logBtn);
+
+      if (isAdmin) {
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className = "secondary";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => {
+          loadForEdit(item.id);
+        });
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "danger-btn";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => {
+          deleteFAQ(item.id, item.question);
+        });
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+      }
+
+      wrap.appendChild(tagsDiv);
+      wrap.appendChild(actions);
+
+      faqList.appendChild(wrap);
+    });
+
+    renderTopFaqs();
+  }
+
+  // ===== DATA LOAD / UPDATE / DELETE =====
+  async function loadFAQs() {
+    if (!faqsCol) {
+      showError("Firestore not initialised.");
+      return;
+    }
+    try {
+      const snap = await getDocs(query(faqsCol, orderBy("createdAt", "desc")));
+      faqItems = [];
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        faqItems.push({
+          id: docSnap.id,
+          question: data.question || "",
+          answer: data.answer || "",
+          video: data.video || "",
+          tags: Array.isArray(data.tags) ? data.tags : [],
+          count: data.count || 0,
+          createdAt: data.createdAt || 0
+        });
+      });
+      setStatus("Loaded " + faqItems.length + " FAQs from cloud.");
+      renderList();
+    } catch (e) {
+      showError("Failed to load FAQs: " + e.message);
+      setStatus("Load failed.");
+    }
+  }
+
+  async function incrementCount(id) {
+    const item = faqItems.find(f => f.id === id);
+    if (!item) return;
+    const newCount = (item.count || 0) + 1;
+    item.count = newCount;
+    try {
+      await updateDoc(doc(faqsCol, id), { count: newCount });
+      renderList();
+      setStatus("Logged occurrence.");
+    } catch (e) {
+      showError("Failed to log occurrence: " + e.message);
+    }
+  }
+
+  async function deleteFAQ(id, question) {
+    const confirmed = window.confirm(
+      `Delete this FAQ?\n\n"${question}"\n\nThis cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteDoc(doc(faqsCol, id));
+      faqItems = faqItems.filter(f => f.id !== id);
+      renderList();
+      setStatus("FAQ deleted.");
+      if (editingId === id) {
+        faqForm.reset();
+        editingId = null;
+        formHint.textContent = "";
+      }
+    } catch (e) {
+      showError("Failed to delete FAQ: " + e.message);
+      setStatus("Delete failed.");
+    }
+  }
+
+  function loadForEdit(id) {
+    const item = faqItems.find(f => f.id === id);
+    if (!item) return;
+    editingId = id;
+    questionInput.value = item.question;
+    answerInput.value = item.answer;
+    videoInput.value = item.video || "";
+    tagsInput.value = item.tags.join(", ");
+    formHint.textContent = "Editing existing FAQ. Saving will update it.";
+    setStatus("Editing FAQ.");
+    questionInput.focus();
+  }
+
+  function resetEditing() {
+    editingId = null;
+    formHint.textContent = "";
+  }
+
+  // ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK + TAG VALIDATION) =====
+  faqForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const question = questionInput.value.trim();
+    if (!question) return;
+
+    const answer = answerInput.value.trim();
+    const video = videoInput.value.trim();
+    const tags = tagsInput.value
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean);
+
+    // Require at least one tag
+    if (tags.length === 0) {
+      showError("Please add at least one tag before saving.");
+      setStatus("Save cancelled.");
+      tagsInput.focus();
+      return;
+    }
+
+    // If we're editing an existing FAQ, only admin can do that
+    if (editingId && !isAdmin) {
+      window.alert("Only admin can edit existing FAQs.");
+      return;
+    }
+
+    const questionNorm = normaliseText(question);
+
+    // Only run dupe warning if this question text hasn't already been approved
+    if (questionNorm !== lastApprovedQuestion) {
+      const softThreshold = 0.6;
+      const hardThreshold = 0.85;
+
+      const similarAll = findSimilarQuestions(question, softThreshold, editingId);
+      if (similarAll.length > 0) {
+        const similarHard = similarAll.filter(s => s.sim >= hardThreshold);
+        const useList = (similarHard.length > 0 ? similarHard : similarAll).slice(0, 5);
+
+        const list = useList
+          .map(s => `• ${s.item.question} (${Math.round(s.sim * 100)}% similar)`)
+          .join("\n");
+
+        const proceed = window.confirm(
+          "This question looks similar to existing FAQ(s):\n\n" +
+          list +
+          "\n\nIf you simply meant to record that this question came up again, click Cancel and use the 'Log occurrence' button on the existing FAQ.\n\nSave anyway?"
+        );
+
+        if (!proceed) {
+          setStatus("Save cancelled due to possible duplicate.");
+          return;
+        }
+
+        // Remember this exact question text as "approved" so we don't nag again
+        lastApprovedQuestion = questionNorm;
+      }
+    }
+
+    try {
+      if (editingId) {
+        // update existing FAQ (admin only, checked above)
+        await updateDoc(doc(faqsCol, editingId), {
+          question,
+          answer,
+          video,
+          tags
+        });
+
+        const idx = faqItems.findIndex(f => f.id === editingId);
+        if (idx !== -1) {
+          faqItems[idx].question = question;
+          faqItems[idx].answer = answer;
+          faqItems[idx].video = video;
+          faqItems[idx].tags = tags;
+        }
+
+        formHint.textContent = "FAQ updated.";
+        setStatus("FAQ updated in cloud.");
+        setTimeout(() => {
+          if (formHint.textContent === "FAQ updated.") formHint.textContent = "";
+        }, 2000);
+        editingId = null;
+      } else {
+        // create new FAQ (first occurrence counts as 1)
+        const createdAt = Date.now();
+        const docRef = await addDoc(faqsCol, {
+          question,
+          answer,
+          video,
+          tags,
+          count: 1,
+          createdAt
+        });
+
+        faqItems.unshift({
+          id: docRef.id,
+          question,
+          answer,
+          video,
+          tags,
+          count: 1,
+          createdAt
+        });
+
+        formHint.textContent = "FAQ saved.";
+        setStatus("FAQ saved to cloud.");
+        setTimeout(() => {
+          if (formHint.textContent === "FAQ saved.") formHint.textContent = "";
+        }, 2000);
+      }
+
+      // Clear any previous error now that save succeeded
+      errorBox.textContent = "";
+
+      faqForm.reset();
+      resetEditing();
+      renderList();
+    } catch (e) {
+      showError("Failed to save FAQ: " + e.message);
+      setStatus("Save failed.");
+    }
+  });
+
+  clearFormButton.addEventListener("click", () => {
+    faqForm.reset();
+    resetEditing();
+    lastApprovedQuestion = null;
+    setStatus("Form cleared.");
+  });
+
+  searchInput.addEventListener("input", renderList);
+
+  clearSearchButton.addEventListener("click", () => {
+    searchInput.value = "";
+    renderList();
+    setStatus("Search cleared.");
+  });
+
+  loadFAQs();
+</script>
+
+</body>
+</html>

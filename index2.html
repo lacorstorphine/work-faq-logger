@@ -70,12 +70,19 @@
       color: var(--text);
       display: flex;
       justify-content: center;
+      align-items: stretch;
+      min-height: 100vh;
     }
 
     .app {
-      max-width: 900px;
+      max-width: 1100px;
       width: 100%;
       padding: 1.5rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      box-sizing: border-box;
     }
 
     .card {
@@ -83,7 +90,7 @@
       border-radius: 1rem;
       padding: 1.25rem 1.5rem;
       border: 1px solid var(--border);
-      margin-bottom: 1.5rem;
+      box-sizing: border-box;
     }
 
     .card-header {
@@ -183,6 +190,7 @@
       border: 1px solid var(--border);
       padding: 0.75rem 0.9rem;
       background: radial-gradient(circle at top left, var(--accent-soft), transparent 55%);
+      cursor: pointer;
     }
 
     .faq-header {
@@ -280,21 +288,70 @@
       }
     }
 
-    /* Layout for the search + top questions card */
-    .card-layout {
+    /* Main second card layout */
+    .main-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      margin-bottom: 0;
+    }
+
+    .main-grid {
       display: flex;
       gap: 1.25rem;
-      align-items: flex-start;
+      align-items: stretch;
+      margin-bottom: 1rem;
     }
 
-    .card-main {
-      flex: 2 1 0;
+    .main-box {
+      flex: 3 1 0;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 0.75rem 0.9rem;
+      background: radial-gradient(circle at top left, var(--accent-soft), transparent 55%);
+      box-sizing: border-box;
     }
 
-    .card-side {
-      flex: 1 1 220px;
-      border-left: 1px solid var(--border);
-      padding-left: 1rem;
+    .top-box {
+      flex: 1.5 1 220px;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 0.75rem 0.9rem;
+      box-sizing: border-box;
+    }
+
+    .search-area {
+      margin-top: 0.25rem;
+    }
+
+    .main-box-title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .main-box-placeholder {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .selected-question {
+      margin: 0.4rem 0 0.25rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .selected-answer {
+      font-size: 0.9rem;
+      white-space: pre-line;
+    }
+
+    .selected-meta {
+      margin-top: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--muted);
     }
 
     .side-title {
@@ -308,27 +365,22 @@
       font-size: 0.9rem;
     }
 
-.top-faq-list li {
-  margin-bottom: 0.35rem;
-  cursor: pointer;
-}
+    .top-faq-list li {
+      margin-bottom: 0.35rem;
+      cursor: pointer;
+    }
 
-.top-faq-list li:hover {
-  text-decoration: underline;
-}
+    .top-faq-list li:hover {
+      text-decoration: underline;
+    }
 
-
-    /* Stack on small screens */
     @media (max-width: 800px) {
-      .card-layout {
+      .main-grid {
         flex-direction: column;
       }
 
-      .card-side {
-        border-left: none;
-        border-top: 1px solid var(--border);
-        padding-left: 0;
-        padding-top: 1rem;
+      .top-box {
+        flex: none;
       }
     }
   </style>
@@ -384,8 +436,23 @@
     </form>
   </div>
 
-  <div class="card card-layout">
-    <div class="card-main">
+  <div class="card main-card">
+    <div class="main-grid">
+      <div class="main-box" id="selectedFaqBox">
+        <h2 class="main-box-title">Selected question</h2>
+        <p class="main-box-placeholder">
+          Click a question from “Top questions” or the list below.
+        </p>
+        <div id="selectedFaqContent"></div>
+      </div>
+
+      <div class="top-box">
+        <h2 class="side-title">Top questions</h2>
+        <ol id="topFaqList" class="top-faq-list"></ol>
+      </div>
+    </div>
+
+    <div class="search-area">
       <label for="searchInput">Search</label>
       <input
         id="searchInput"
@@ -402,11 +469,6 @@
       </button>
 
       <div class="faq-list" id="faqList"></div>
-    </div>
-
-    <div class="card-side">
-      <h2 class="side-title">Top questions</h2>
-      <ol id="topFaqList" class="top-faq-list"></ol>
     </div>
   </div>
 
@@ -485,6 +547,7 @@
   let editingId = null;             // which FAQ is being edited (if any)
   let isAdmin = false;              // admin mode flag
   let lastApprovedQuestion = null;  // hysteresis for dupe warning
+  let selectedFaqId = null;         // which FAQ is shown in main box
 
   // CHANGE THIS PASSWORD TO WHATEVER YOU LIKE
   const ADMIN_PASSWORD = "changeme";
@@ -510,6 +573,8 @@
   const formHint = document.getElementById("formHint");
   const adminToggleBtn = document.getElementById("adminToggle");
   const topFaqList = document.getElementById("topFaqList");
+  const selectedFaqBox = document.getElementById("selectedFaqBox");
+  const selectedFaqContent = document.getElementById("selectedFaqContent");
   const xmasToggle = document.getElementById("xmasToggle");
 
   // ===== CHRISTMAS MODE =====
@@ -586,6 +651,50 @@
     }
   });
 
+  // ===== SELECTED FAQ (MAIN BOX) =====
+  function renderSelectedFaq() {
+    if (!selectedFaqContent || !selectedFaqBox) return;
+
+    selectedFaqContent.innerHTML = "";
+    const placeholder = selectedFaqBox.querySelector(".main-box-placeholder");
+
+    if (!faqItems.length || !selectedFaqId) {
+      if (placeholder) placeholder.style.display = "block";
+      return;
+    }
+
+    const item = faqItems.find(f => f.id === selectedFaqId) || faqItems[0];
+    if (!item) {
+      if (placeholder) placeholder.style.display = "block";
+      return;
+    }
+
+    if (placeholder) placeholder.style.display = "none";
+
+    const qEl = document.createElement("h3");
+    qEl.className = "selected-question";
+    qEl.textContent = item.question;
+
+    const aEl = document.createElement("div");
+    aEl.className = "selected-answer";
+    aEl.textContent = item.answer || "No answer saved yet.";
+
+    const meta = document.createElement("div");
+    meta.className = "selected-meta";
+
+    const pieces = [];
+    const count = item.count || 0;
+    pieces.push(count + " logged time" + (count === 1 ? "" : "s"));
+    if (item.tags && item.tags.length) {
+      pieces.push("Tags: " + item.tags.join(", "));
+    }
+    meta.textContent = pieces.join(" • ");
+
+    selectedFaqContent.appendChild(qEl);
+    selectedFaqContent.appendChild(aEl);
+    selectedFaqContent.appendChild(meta);
+  }
+
   // ===== TOP QUESTIONS SIDEBAR =====
   function renderTopFaqs() {
     if (!topFaqList) return;
@@ -604,21 +713,19 @@
       return;
     }
 
-     items.forEach(item => {
-    const li = document.createElement("li");
-    li.textContent = `${item.question} (${item.count || 0})`;
+    items.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = `${item.question} (${item.count || 0})`;
 
-    // When you click a top question, show it in the main list
-    li.addEventListener("click", () => {
-      searchInput.value = item.question;
-      renderList();
-      setStatus(`Showing results for: "${item.question}"`);
+      li.addEventListener("click", () => {
+        selectedFaqId = item.id;
+        renderSelectedFaq();
+        setStatus(`Selected: "${item.question}"`);
+      });
+
+      topFaqList.appendChild(li);
     });
-
-    topFaqList.appendChild(li);
-  });
-}
-
+  }
 
   // ===== DUPLICATE CHECKING =====
   function normaliseText(str) {
@@ -675,6 +782,7 @@
       faqList.appendChild(p);
 
       renderTopFaqs();
+      renderSelectedFaq();
       return;
     }
 
@@ -732,7 +840,10 @@
       const logBtn = document.createElement("button");
       logBtn.type = "button";
       logBtn.textContent = "Log occurrence";
-      logBtn.addEventListener("click", () => incrementCount(item.id));
+      logBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        incrementCount(item.id);
+      });
       actions.appendChild(logBtn);
 
       if (isAdmin) {
@@ -740,7 +851,8 @@
         editBtn.type = "button";
         editBtn.className = "secondary";
         editBtn.textContent = "Edit";
-        editBtn.addEventListener("click", () => {
+        editBtn.addEventListener("click", (event) => {
+          event.stopPropagation();
           loadForEdit(item.id);
         });
 
@@ -748,7 +860,8 @@
         deleteBtn.type = "button";
         deleteBtn.className = "danger-btn";
         deleteBtn.textContent = "Delete";
-        deleteBtn.addEventListener("click", () => {
+        deleteBtn.addEventListener("click", (event) => {
+          event.stopPropagation();
           deleteFAQ(item.id, item.question);
         });
 
@@ -759,10 +872,18 @@
       wrap.appendChild(tagsDiv);
       wrap.appendChild(actions);
 
+      // Clicking the whole item selects it in the main box
+      wrap.addEventListener("click", () => {
+        selectedFaqId = item.id;
+        renderSelectedFaq();
+        setStatus(`Selected: "${item.question}"`);
+      });
+
       faqList.appendChild(wrap);
     });
 
     renderTopFaqs();
+    renderSelectedFaq();
   }
 
   // ===== DATA LOAD / UPDATE / DELETE =====
@@ -786,6 +907,10 @@
           createdAt: data.createdAt || 0
         });
       });
+
+      // Default selection: first FAQ if any
+      selectedFaqId = faqItems.length ? faqItems[0].id : null;
+
       setStatus("Loaded " + faqItems.length + " FAQs from cloud.");
       renderList();
     } catch (e) {
@@ -817,6 +942,12 @@
     try {
       await deleteDoc(doc(faqsCol, id));
       faqItems = faqItems.filter(f => f.id !== id);
+
+      // If we just deleted the selected FAQ, pick another
+      if (selectedFaqId === id) {
+        selectedFaqId = faqItems.length ? faqItems[0].id : null;
+      }
+
       renderList();
       setStatus("FAQ deleted.");
       if (editingId === id) {
@@ -944,7 +1075,7 @@
           createdAt
         });
 
-        faqItems.unshift({
+        const newItem = {
           id: docRef.id,
           question,
           answer,
@@ -952,7 +1083,10 @@
           tags,
           count: 1,
           createdAt
-        });
+        };
+
+        faqItems.unshift(newItem);
+        selectedFaqId = newItem.id;
 
         formHint.textContent = "FAQ saved.";
         setStatus("FAQ saved to cloud.");

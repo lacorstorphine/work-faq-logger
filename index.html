@@ -768,106 +768,128 @@ if (tags.length === 0) {
   return;
 }
 
+// ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK + TAG VALIDATION) =====
+faqForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    // If we're editing an existing FAQ, only admin can do that
-    if (editingId && !isAdmin) {
-      window.alert("Only admin can edit existing FAQs.");
-      return;
-    }
+  const question = questionInput.value.trim();
+  if (!question) return;
 
-    const questionNorm = normaliseText(question);
+  const answer = answerInput.value.trim();
+  const video = videoInput.value.trim();
+  const tags = tagsInput.value
+    .split(",")
+    .map(t => t.trim())
+    .filter(Boolean);
 
-    // Only run dupe warning if this question text hasn't already been approved
-    if (questionNorm !== lastApprovedQuestion) {
-      const softThreshold = 0.6;
-      const hardThreshold = 0.85;
+  // Require at least one tag
+  if (tags.length === 0) {
+    showError("Please add at least one tag before saving.");
+    setStatus("Save cancelled.");
+    tagsInput.focus();
+    return;
+  }
 
-      const similarAll = findSimilarQuestions(question, softThreshold, editingId);
-      if (similarAll.length > 0) {
-        const similarHard = similarAll.filter(s => s.sim >= hardThreshold);
-        const useList = (similarHard.length > 0 ? similarHard : similarAll).slice(0, 5);
+  // If we're editing an existing FAQ, only admin can do that
+  if (editingId && !isAdmin) {
+    window.alert("Only admin can edit existing FAQs.");
+    return;
+  }
 
-        const list = useList
-          .map(s => `• ${s.item.question} (${Math.round(s.sim * 100)}% similar)`)
-          .join("\n");
+  const questionNorm = normaliseText(question);
 
-        const proceed = window.confirm(
-          "This question looks similar to existing FAQ(s):\n\n" +
-          list +
-          "\n\nSave anyway?"
-        );
+  // Only run dupe warning if this question text hasn't already been approved
+  if (questionNorm !== lastApprovedQuestion) {
+    const softThreshold = 0.6;
+    const hardThreshold = 0.85;
 
-        if (!proceed) {
-          setStatus("Save cancelled due to possible duplicate.");
-          return;
-        }
+    const similarAll = findSimilarQuestions(question, softThreshold, editingId);
+    if (similarAll.length > 0) {
+      const similarHard = similarAll.filter(s => s.sim >= hardThreshold);
+      const useList = (similarHard.length > 0 ? similarHard : similarAll).slice(0, 5);
 
-        // Remember this exact question text as "approved" so we don't nag again
-        lastApprovedQuestion = questionNorm;
-      }
-    }
+      const list = useList
+        .map(s => `• ${s.item.question} (${Math.round(s.sim * 100)}% similar)`)
+        .join("\n");
 
-    try {
-      if (editingId) {
-        // update existing FAQ (admin only, checked above)
-        await updateDoc(doc(faqsCol, editingId), {
-          question,
-          answer,
-          video,
-          tags
-        });
+      const proceed = window.confirm(
+        "This question looks similar to existing FAQ(s):\n\n" +
+        list +
+        "\n\nIf you simply meant to record that this question came up again, click Cancel and use the 'Log occurrence' button on the existing FAQ.\n\nSave anyway?"
+      );
 
-        const idx = faqItems.findIndex(f => f.id === editingId);
-        if (idx !== -1) {
-          faqItems[idx].question = question;
-          faqItems[idx].answer = answer;
-          faqItems[idx].video = video;
-          faqItems[idx].tags = tags;
-        }
-
-        formHint.textContent = "FAQ updated.";
-        setStatus("FAQ updated in cloud.");
-        setTimeout(() => {
-          if (formHint.textContent === "FAQ updated.") formHint.textContent = "";
-        }, 2000);
-        editingId = null;
-      } else {
-        // create new FAQ (allowed for everyone)
-        const createdAt = Date.now();
-        const docRef = await addDoc(faqsCol, {
-          question,
-          answer,
-          video,
-          tags,
-          count: 1,   // first occurrence
-          createdAt
-        });
-
-        faqItems.unshift({
-          id: docRef.id,
-          question,
-          answer,
-          video,
-          tags,
-          count: 1,   // keep in sync
-          createdAt
-        });
-
-        formHint.textContent = "FAQ saved.";
-        setStatus("FAQ saved to cloud.");
-        setTimeout(() => {
-          if (formHint.textContent === "FAQ saved.") formHint.textContent = "";
-        }, 2000);
+      if (!proceed) {
+        setStatus("Save cancelled due to possible duplicate.");
+        return;
       }
 
-      faqForm.reset();
-      resetEditing();
-      renderList();
-    } catch (e) {
-      showError("Failed to save FAQ: " + e.message);
-      setStatus("Save failed.");
+      // Remember this exact question text as "approved" so we don't nag again
+      lastApprovedQuestion = questionNorm;
     }
-  });
+  }
+
+  try {
+    if (editingId) {
+      // update existing FAQ (admin only, checked above)
+      await updateDoc(doc(faqsCol, editingId), {
+        question,
+        answer,
+        video,
+        tags
+      });
+
+      const idx = faqItems.findIndex(f => f.id === editingId);
+      if (idx !== -1) {
+        faqItems[idx].question = question;
+        faqItems[idx].answer = answer;
+        faqItems[idx].video = video;
+        faqItems[idx].tags = tags;
+      }
+
+      formHint.textContent = "FAQ updated.";
+      setStatus("FAQ updated in cloud.");
+      setTimeout(() => {
+        if (formHint.textContent === "FAQ updated.") formHint.textContent = "";
+      }, 2000);
+      editingId = null;
+    } else {
+      // create new FAQ (first occurrence counts as 1)
+      const createdAt = Date.now();
+      const docRef = await addDoc(faqsCol, {
+        question,
+        answer,
+        video,
+        tags,
+        count: 1,
+        createdAt
+      });
+
+      faqItems.unshift({
+        id: docRef.id,
+        question,
+        answer,
+        video,
+        tags,
+        count: 1,
+        createdAt
+      });
+
+      formHint.textContent = "FAQ saved.";
+      setStatus("FAQ saved to cloud.");
+      setTimeout(() => {
+        if (formHint.textContent === "FAQ saved.") formHint.textContent = "";
+      }, 2000);
+    }
+
+    faqForm.reset();
+    resetEditing();
+    renderList();
+  } catch (e) {
+    showError("Failed to save FAQ: " + e.message);
+    setStatus("Save failed.");
+  }
+});
+
 
   clearFormButton.addEventListener("click", () => {
     faqForm.reset();

@@ -406,6 +406,82 @@
   box-sizing: border-box;
 }
 
+    /* Make the whole viewport a fixed-height dashboard */
+body {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* The .app wrapper must fill the height */
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* FORM CARD (top box) – auto height */
+.card:first-of-type {
+  flex: 0 0 auto;
+}
+
+/* MAIN CARD (everything below form) takes the rest of the screen */
+.main-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Top half of screen */
+.main-grid {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 1.25rem;
+  overflow: hidden;
+}
+
+/* Left (selected FAQ) + Right (top questions) */
+.main-box,
+.top-box {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Selected FAQ content scrolls internally */
+#selectedFaqContent {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Top questions list scrolls if needed */
+.top-faq-list {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Bottom half of screen */
+.search-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* FAQ list scrolls */
+.faq-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+
   </style>
 </head>
 <body>

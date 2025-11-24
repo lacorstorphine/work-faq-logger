@@ -386,6 +386,65 @@
         flex: none;
       }
     }
+
+    /* Make the top row take roughly half the screen */
+.main-grid {
+  display: flex;
+  gap: 1.25rem;
+  align-items: stretch;
+  margin-bottom: 1rem;
+  height: 45vh;                  /* adjust to taste (40–50vh works well) */
+  box-sizing: border-box;
+}
+
+/* Selected question and Top questions should stretch fully */
+.main-box,
+.top-box {
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Selected question content scrolls if long */
+#selectedFaqContent {
+  overflow-y: auto;
+  max-height: 100%;
+  padding-right: 0.25rem;        /* avoids scrollbar overlap */
+  box-sizing: border-box;
+}
+
+/* Bottom half takes remaining height */
+.search-area {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* FAQ archive list scrolls properly */
+.faq-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 1rem;
+  box-sizing: border-box;
+}
+
+/* Make the whole app use ~90% width */
+.app {
+  width: 90vw;
+  max-width: 1600px;             /* optional – prevents extreme stretching */
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Slight tightening of padding for a denser look */
+@media (min-width: 640px) {
+  .card {
+    padding: 1rem 1.25rem;
+  }
+}
+
   </style>
 </head>
 <body>

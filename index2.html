@@ -72,21 +72,22 @@
       justify-content: center;
       align-items: stretch;
       min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
     }
 
-.app {
-  width: 90vw;              /* take up 90% of the viewport width */
-  max-width: 1600px;        /* optional: stops it getting *too* wide on huge screens */
-  padding: 1.5rem;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  box-sizing: border-box;
-  margin: 0 auto;           /* keeps it centred */
-}
-
-
+    .app {
+      width: 90vw;
+      max-width: 1600px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      box-sizing: border-box;
+      margin: 0 auto;
+      height: 100%;
+      overflow: hidden;
+    }
 
     .card {
       background: var(--card-bg);
@@ -179,16 +180,15 @@
       border: 1px solid var(--danger);
     }
 
-.faq-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  flex: 1;                /* fill the bottom section */
-  overflow-y: auto;
-  margin-top: 1rem;
-  box-sizing: border-box;
-}
-
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+      overflow-y: auto;
+      margin-top: 1rem;
+      box-sizing: border-box;
+    }
 
     .faq-item {
       border-radius: 0.75rem;
@@ -293,52 +293,50 @@
       }
     }
 
-    /* Main second card layout */
-.main-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  margin-bottom: 0;
-  min-height: 60vh;   /* makes the whole card tall enough to split */
-}
+    /* MAIN LAYOUT: top/bottom split inside the main card */
+    .main-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
 
+    /* Top half of screen (selected question + top questions) */
+    .main-grid {
+      display: flex;
+      gap: 1.25rem;
+      align-items: stretch;
+      margin-bottom: 1rem;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
 
-.main-grid {
-  display: flex;
-  gap: 1.25rem;
-  align-items: stretch;
-  margin-bottom: 1rem;
-  flex: 0 0 50%;      /* take roughly the top half of main-card */
-  min-height: 0;
-}
-
-
+    /* 70%: main question/answer/tags (left) */
     .main-box {
-      flex: 3 1 0;
+      flex: 7 1 0;
       border-radius: 0.75rem;
       border: 1px solid var(--border);
       padding: 0.75rem 0.9rem;
       background: radial-gradient(circle at top left, var(--accent-soft), transparent 55%);
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
+    /* 30%: top questions (right) */
     .top-box {
-      flex: 1.5 1 220px;
+      flex: 3 1 0;
       border-radius: 0.75rem;
       border: 1px solid var(--border);
       padding: 0.75rem 0.9rem;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-
-.search-area {
-  margin-top: 0.25rem;
-  flex: 1;                     /* bottom section fills remaining space */
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
 
     .main-box-title {
       margin: 0 0 0.35rem 0;
@@ -378,6 +376,10 @@
       margin: 0;
       padding-left: 1.1rem;
       font-size: 0.9rem;
+      list-style: decimal;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
     }
 
     .top-faq-list li {
@@ -389,99 +391,34 @@
       text-decoration: underline;
     }
 
+    #selectedFaqContent {
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      padding-right: 0.25rem;
+      box-sizing: border-box;
+    }
+
+    /* Bottom half of screen (search + FAQ archive) */
+    .search-area {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin-top: 0.25rem;
+    }
+
     @media (max-width: 800px) {
       .main-grid {
         flex-direction: column;
       }
-
+      .main-box,
       .top-box {
         flex: none;
+        height: 50%;
       }
     }
-
-   #selectedFaqContent {
-  overflow-y: auto;
-  max-height: 100%;
-  padding-right: 0.25rem;
-  box-sizing: border-box;
-}
-
-    /* Make the whole viewport a fixed-height dashboard */
-body {
-  height: 100vh;
-  overflow: hidden;
-}
-
-/* The .app wrapper must fill the height */
-.app {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* FORM CARD (top box) – auto height */
-.card:first-of-type {
-  flex: 0 0 auto;
-}
-
-/* MAIN CARD (everything below form) takes the rest of the screen */
-.main-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Top half of screen */
-.main-grid {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  gap: 1.25rem;
-  overflow: hidden;
-}
-
-/* Left (selected FAQ) + Right (top questions) */
-.main-box,
-.top-box {
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Selected FAQ content scrolls internally */
-#selectedFaqContent {
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-
-/* Top questions list scrolls if needed */
-.top-faq-list {
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-
-/* Bottom half of screen */
-.search-area {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* FAQ list scrolls */
-.faq-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-
   </style>
 </head>
 <body>
@@ -536,6 +473,7 @@ body {
   </div>
 
   <div class="card main-card">
+    <!-- TOP HALF: selected question (70%) + top questions (30%) -->
     <div class="main-grid">
       <div class="main-box" id="selectedFaqBox">
         <h2 class="main-box-title">Selected question</h2>
@@ -551,6 +489,7 @@ body {
       </div>
     </div>
 
+    <!-- BOTTOM HALF: search + FAQ archive -->
     <div class="search-area">
       <label for="searchInput">Search</label>
       <input
@@ -1066,7 +1005,7 @@ body {
     editingId = id;
     questionInput.value = item.question;
     answerInput.value = item.answer;
-    videoInput.value = item.video || "";
+    videoInput.value = item.video;
     tagsInput.value = item.tags.join(", ");
     formHint.textContent = "Editing existing FAQ. Saving will update it.";
     setStatus("Editing FAQ.");

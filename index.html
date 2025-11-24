@@ -95,8 +95,7 @@
     }
 
     input[type="text"],
-    textarea,
-    select {
+    textarea {
       width: 100%;
       padding: 0.5rem 0.6rem;
       border-radius: 0.5rem;
@@ -164,12 +163,6 @@
       align-items: baseline;
     }
 
-    .faq-header-left {
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
-    }
-
     .badge {
       display: inline-flex;
       align-items: center;
@@ -219,21 +212,6 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      align-items: center;
-    }
-
-    .faq-actions-left {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .faq-actions-right {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-left: auto;
     }
 
     .error {
@@ -264,32 +242,6 @@
       padding: 0.3rem 0.7rem;
     }
 
-    .stats-bar {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-bottom: 0.75rem;
-    }
-
-    .faq-source-select {
-      width: auto;
-      min-width: 120px;
-      font-size: 0.8rem;
-      padding: 0.3rem 0.6rem;
-    }
-
-    .drag-handle {
-      cursor: grab;
-      font-size: 0.9rem;
-      color: var(--muted);
-      user-select: none;
-    }
-
-    mark {
-      background: rgba(234, 179, 8, 0.4);
-      padding: 0 2px;
-      border-radius: 2px;
-    }
-
     @media (max-width: 640px) {
       .card {
         padding: 1rem;
@@ -297,22 +249,8 @@
       h1 {
         font-size: 1.2rem;
       }
-      .faq-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .faq-actions {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .faq-actions-right {
-        margin-left: 0;
-      }
     }
   </style>
-
-  <!-- SortableJS for drag and drop reordering -->
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 </head>
 <body>
 
@@ -345,8 +283,7 @@
       <input id="videoInput" type="text" placeholder="https://youtube.com/..." />
 
       <label for="tagsInput" style="margin-top:.6rem;">Tags (comma separated)</label>
-      <input id="tagsInput" type="text" list="tagOptions" />
-      <datalist id="tagOptions"></datalist>
+      <input id="tagsInput" type="text" />
 
       <div class="row">
         <button type="submit">Save FAQ</button>
@@ -360,8 +297,6 @@
   </div>
 
   <div class="card">
-    <div id="statsBar" class="stats-bar"></div>
-
     <label for="searchInput">Search</label>
     <input
       id="searchInput"
@@ -451,7 +386,7 @@
   let isAdmin = false;              // admin mode flag
   let lastApprovedQuestion = null;  // hysteresis for dupe warning
 
-  // CHANGE THIS PASSWORD TO WHATEVER YOU LIKE (for now, only you use it)
+  // CHANGE THIS PASSWORD TO WHATEVER YOU LIKE
   const ADMIN_PASSWORD = "changeme";
 
   try {
@@ -474,13 +409,6 @@
   const faqList = document.getElementById("faqList");
   const formHint = document.getElementById("formHint");
   const adminToggleBtn = document.getElementById("adminToggle");
-  const tagOptionsEl = document.getElementById("tagOptions");
-  const statsBar = document.getElementById("statsBar");
-
-  // focus search on load for faster use
-  window.addEventListener("load", () => {
-    searchInput.focus();
-  });
 
   // ===== ADMIN HANDLING =====
   function updateAdminUI() {
@@ -540,64 +468,17 @@
     return matches;
   }
 
-  // ===== HIGHLIGHT MATCHES IN SEARCH =====
-  function escapeRegExp(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
-
-  function highlight(text, query) {
-    if (!query) return text;
-    const pattern = escapeRegExp(query);
-    const re = new RegExp(pattern, "gi");
-    return text.replace(re, match => `<mark>${match}</mark>`);
-  }
-
-  // ===== TAG AUTOCOMPLETE =====
-  function updateTagOptions() {
-    if (!tagOptionsEl) return;
-    const allTags = [...new Set(faqItems.flatMap(f => Array.isArray(f.tags) ? f.tags : []))].sort();
-    tagOptionsEl.innerHTML = allTags.map(t => `<option value="${t}"></option>`).join("");
-  }
-
-  // ===== STATS PANEL =====
-  function updateStats() {
-    if (!statsBar) return;
-    const total = faqItems.length;
-    const occurrences = faqItems.reduce((sum, item) => sum + (item.count || 0), 0);
-    let top = null;
-    faqItems.forEach(item => {
-      if (!top || (item.count || 0) > (top.count || 0)) {
-        top = item;
-      }
-    });
-    const topText = top && top.count > 0
-      ? `Top question: "${top.question}" (${top.count} logged)`
-      : "No occurrences logged yet";
-    statsBar.textContent = `FAQs: ${total} | Logged occurrences: ${occurrences} | ${topText}`;
-  }
-
   // ===== RENDERING =====
   function renderList() {
-    const searchRaw = searchInput.value.trim();
-    const q = searchRaw.toLowerCase();
+    const q = searchInput.value.toLowerCase().trim();
     faqList.innerHTML = "";
 
-    let items = faqItems.slice();
-
+    let items = faqItems;
     if (q) {
       items = items.filter(item => {
         const text = (item.question + " " + item.answer + " " + (item.video || "") + " " + item.tags.join(" "))
           .toLowerCase();
         return text.includes(q);
-      });
-    } else {
-      // sort for default view: pinned first, then by manual order
-      items.sort((a, b) => {
-        if (a.pinned && !b.pinned) return -1;
-        if (b.pinned && !a.pinned) return 1;
-        const ao = typeof a.order === "number" ? a.order : 0;
-        const bo = typeof b.order === "number" ? b.order : 0;
-        return ao - bo;
       });
     }
 
@@ -612,36 +493,24 @@
     items.forEach(item => {
       const wrap = document.createElement("div");
       wrap.className = "faq-item";
-      wrap.dataset.id = item.id;
 
       const header = document.createElement("div");
       header.className = "faq-header";
 
-      const headerLeft = document.createElement("div");
-      headerLeft.className = "faq-header-left";
-
-      const dragHandle = document.createElement("span");
-      dragHandle.className = "drag-handle";
-      dragHandle.textContent = "⋮⋮";
-
       const title = document.createElement("strong");
-      title.innerHTML = searchRaw ? highlight(item.question, searchRaw) : item.question;
-
-      headerLeft.appendChild(dragHandle);
-      headerLeft.appendChild(title);
+      title.textContent = item.question;
 
       const badge = document.createElement("div");
       badge.className = "badge";
       badge.textContent = (item.count || 0) + " times";
 
-      header.appendChild(headerLeft);
-      header.appendChild(badge);
-      wrap.appendChild(header);
-
       const answer = document.createElement("div");
       answer.className = "faq-answer";
-      const answerText = item.answer || "No answer saved yet.";
-      answer.innerHTML = searchRaw ? highlight(answerText, searchRaw) : answerText;
+      answer.textContent = item.answer || "No answer saved yet.";
+
+      header.appendChild(title);
+      header.appendChild(badge);
+      wrap.appendChild(header);
       wrap.appendChild(answer);
 
       if (item.video) {
@@ -660,101 +529,42 @@
       const tags = document.createElement("div");
       tags.className = "faq-tags";
       tags.textContent = item.tags.length ? item.tags.join(", ") : "untagged";
-      wrap.appendChild(tags);
 
       const actions = document.createElement("div");
       actions.className = "faq-actions";
 
-      const actionsLeft = document.createElement("div");
-      actionsLeft.className = "faq-actions-left";
-
       const logBtn = document.createElement("button");
       logBtn.type = "button";
       logBtn.textContent = "Log occurrence";
-
-      const sourceSelect = document.createElement("select");
-      sourceSelect.className = "faq-source-select";
-      [
-        { value: "general", label: "General" },
-        { value: "teams", label: "Teams" },
-        { value: "email", label: "Email" },
-        { value: "in_person", label: "In person" }
-      ].forEach(opt => {
-        const o = document.createElement("option");
-        o.value = opt.value;
-        o.textContent = opt.label;
-        sourceSelect.appendChild(o);
-      });
-
-      const copyBtn = document.createElement("button");
-      copyBtn.type = "button";
-      copyBtn.className = "secondary";
-      copyBtn.textContent = "Copy answer";
-
-      actionsLeft.appendChild(logBtn);
-      actionsLeft.appendChild(sourceSelect);
-      actionsLeft.appendChild(copyBtn);
-
-      const actionsRight = document.createElement("div");
-      actionsRight.className = "faq-actions-right";
-
-      const pinBtn = document.createElement("button");
-      pinBtn.type = "button";
-      pinBtn.className = "secondary";
-      pinBtn.textContent = item.pinned ? "Unpin" : "Pin";
-      actionsRight.appendChild(pinBtn);
+      logBtn.addEventListener("click", () => incrementCount(item.id));
+      actions.appendChild(logBtn);
 
       if (isAdmin) {
         const editBtn = document.createElement("button");
         editBtn.type = "button";
         editBtn.className = "secondary";
         editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => {
+          loadForEdit(item.id);
+        });
 
         const deleteBtn = document.createElement("button");
         deleteBtn.type = "button";
         deleteBtn.className = "danger-btn";
         deleteBtn.textContent = "Delete";
-
-        actionsRight.appendChild(editBtn);
-        actionsRight.appendChild(deleteBtn);
-
-        editBtn.addEventListener("click", () => {
-          loadForEdit(item.id);
-        });
-
         deleteBtn.addEventListener("click", () => {
           deleteFAQ(item.id, item.question);
         });
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
       }
 
-      actions.appendChild(actionsLeft);
-      actions.appendChild(actionsRight);
+      wrap.appendChild(tags);
       wrap.appendChild(actions);
-
-      // handlers
-      logBtn.addEventListener("click", () => {
-        const source = sourceSelect.value || "general";
-        incrementCount(item.id, source);
-      });
-
-      copyBtn.addEventListener("click", async () => {
-        try {
-          await navigator.clipboard.writeText(item.answer || "");
-          setStatus("Copied answer to clipboard.");
-        } catch (e) {
-          showError("Clipboard copy failed: " + e.message);
-        }
-      });
-
-      pinBtn.addEventListener("click", () => {
-        togglePin(item.id);
-      });
 
       faqList.appendChild(wrap);
     });
-
-    // refresh stats whenever we render
-    updateStats();
   }
 
   // ===== DATA LOAD / UPDATE / DELETE =====
@@ -764,9 +574,8 @@
       return;
     }
     try {
-      const snap = await getDocs(query(faqsCol, orderBy("createdAt", "asc")));
+      const snap = await getDocs(query(faqsCol, orderBy("createdAt", "desc")));
       faqItems = [];
-      let index = 0;
       snap.forEach(docSnap => {
         const data = docSnap.data();
         faqItems.push({
@@ -776,35 +585,24 @@
           video: data.video || "",
           tags: Array.isArray(data.tags) ? data.tags : [],
           count: data.count || 0,
-          createdAt: data.createdAt || 0,
-          pinned: !!data.pinned,
-          order: typeof data.order === "number" ? data.order : index,
-          history: Array.isArray(data.history) ? data.history : []
+          createdAt: data.createdAt || 0
         });
-        index++;
       });
       setStatus("Loaded " + faqItems.length + " FAQs from cloud.");
-      updateTagOptions();
       renderList();
-      initSortable();
     } catch (e) {
       showError("Failed to load FAQs: " + e.message);
       setStatus("Load failed.");
     }
   }
 
-  async function incrementCount(id, source = "general") {
+  async function incrementCount(id) {
     const item = faqItems.find(f => f.id === id);
     if (!item) return;
     const newCount = (item.count || 0) + 1;
-    const newHistory = Array.isArray(item.history) ? item.history.slice() : [];
-    newHistory.push({ time: Date.now(), source });
-
     item.count = newCount;
-    item.history = newHistory;
-
     try {
-      await updateDoc(doc(faqsCol, id), { count: newCount, history: newHistory });
+      await updateDoc(doc(faqsCol, id), { count: newCount });
       renderList();
       setStatus("Logged occurrence.");
     } catch (e) {
@@ -821,7 +619,6 @@
     try {
       await deleteDoc(doc(faqsCol, id));
       faqItems = faqItems.filter(f => f.id !== id);
-      updateTagOptions();
       renderList();
       setStatus("FAQ deleted.");
       if (editingId === id) {
@@ -853,61 +650,9 @@
     formHint.textContent = "";
   }
 
-  async function togglePin(id) {
-    const item = faqItems.find(f => f.id === id);
-    if (!item) return;
-    const newPinned = !item.pinned;
-    item.pinned = newPinned;
-    try {
-      await updateDoc(doc(faqsCol, id), { pinned: newPinned });
-      renderList();
-      setStatus(newPinned ? "FAQ pinned." : "FAQ unpinned.");
-    } catch (e) {
-      showError("Failed to update pin: " + e.message);
-    }
-  }
-
-  // ===== DRAG AND DROP ORDERING =====
-  let sortableInstance = null;
-
-  function initSortable() {
-    if (sortableInstance || !window.Sortable || !faqList) return;
-    sortableInstance = new Sortable(faqList, {
-      handle: ".drag-handle",
-      animation: 150,
-      onEnd: () => {
-        persistOrderFromDOM();
-      }
-    });
-  }
-
-  async function persistOrderFromDOM() {
-    const children = Array.from(faqList.children).filter(el => el.dataset.id);
-    children.forEach((el, index) => {
-      const id = el.dataset.id;
-      const item = faqItems.find(f => f.id === id);
-      if (item) {
-        item.order = index;
-      }
-    });
-
-    // save new order to Firestore
-    try {
-      for (const item of faqItems) {
-        await updateDoc(doc(faqsCol, item.id), { order: item.order });
-      }
-      setStatus("Order updated.");
-    } catch (e) {
-      showError("Failed to save order: " + e.message);
-    }
-  }
-
   // ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK + HYSTERESIS) =====
-  const submitBtn = faqForm.querySelector('button[type="submit"]');
-
   faqForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (submitBtn.disabled) return;
 
     const question = questionInput.value.trim();
     if (!question) return;
@@ -927,6 +672,115 @@
 
     const questionNorm = normaliseText(question);
 
-    // Skip dupe check for very short questions
-    if (questionNorm.length >= 10 && questionNorm !== lastApprovedQuestion) {
-      con
+    // Only run dupe warning if this question text hasn't already been approved
+    if (questionNorm !== lastApprovedQuestion) {
+      const softThreshold = 0.6;
+      const hardThreshold = 0.85;
+
+      const similarAll = findSimilarQuestions(question, softThreshold, editingId);
+      if (similarAll.length > 0) {
+        const similarHard = similarAll.filter(s => s.sim >= hardThreshold);
+        const useList = (similarHard.length > 0 ? similarHard : similarAll).slice(0, 5);
+
+        const list = useList
+          .map(s => `• ${s.item.question} (${Math.round(s.sim * 100)}% similar)`)
+          .join("\n");
+
+        const proceed = window.confirm(
+          "This question looks similar to existing FAQ(s):\n\n" +
+          list +
+          "\n\nSave anyway?"
+        );
+
+        if (!proceed) {
+          setStatus("Save cancelled due to possible duplicate.");
+          return;
+        }
+
+        // Remember this exact question text as "approved" so we don't nag again
+        lastApprovedQuestion = questionNorm;
+      }
+    }
+
+    try {
+      if (editingId) {
+        // update existing FAQ (admin only, checked above)
+        await updateDoc(doc(faqsCol, editingId), {
+          question,
+          answer,
+          video,
+          tags
+        });
+
+        const idx = faqItems.findIndex(f => f.id === editingId);
+        if (idx !== -1) {
+          faqItems[idx].question = question;
+          faqItems[idx].answer = answer;
+          faqItems[idx].video = video;
+          faqItems[idx].tags = tags;
+        }
+
+        formHint.textContent = "FAQ updated.";
+        setStatus("FAQ updated in cloud.");
+        setTimeout(() => {
+          if (formHint.textContent === "FAQ updated.") formHint.textContent = "";
+        }, 2000);
+        editingId = null;
+      } else {
+        // create new FAQ (allowed for everyone)
+        const createdAt = Date.now();
+        const docRef = await addDoc(faqsCol, {
+          question,
+          answer,
+          video,
+          tags,
+          count: 0,
+          createdAt
+        });
+
+        faqItems.unshift({
+          id: docRef.id,
+          question,
+          answer,
+          video,
+          tags,
+          count: 0,
+          createdAt
+        });
+
+        formHint.textContent = "FAQ saved.";
+        setStatus("FAQ saved to cloud.");
+        setTimeout(() => {
+          if (formHint.textContent === "FAQ saved.") formHint.textContent = "";
+        }, 2000);
+      }
+
+      faqForm.reset();
+      resetEditing();
+      renderList();
+    } catch (e) {
+      showError("Failed to save FAQ: " + e.message);
+      setStatus("Save failed.");
+    }
+  });
+
+  clearFormButton.addEventListener("click", () => {
+    faqForm.reset();
+    resetEditing();
+    lastApprovedQuestion = null;
+    setStatus("Form cleared.");
+  });
+
+  searchInput.addEventListener("input", renderList);
+
+  clearSearchButton.addEventListener("click", () => {
+    searchInput.value = "";
+    renderList();
+    setStatus("Search cleared.");
+  });
+
+  loadFAQs();
+</script>
+
+</body>
+</html>

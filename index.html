@@ -5,6 +5,36 @@
   <title>BROADCAST MEDIA SYSTEMS FAQ Logger (Cloud)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+
+    /* Snowflake container */
+#snowContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.snowflake {
+  position: absolute;
+  top: -10px;
+  color: white;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  user-select: none;
+  animation-name: fall;
+  animation-timing-function: linear;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(110vh);
+  }
+}
+
     :root {
       /* default (dark) */
       --bg: #0f172a;
@@ -269,6 +299,9 @@
         <button type="button" class="secondary admin-toggle-btn" id="adminToggle">
           Admin login
         </button>
+        <button type="button" class="secondary" id="xmasToggle">
+          Christmas mode
+        </button>
       </div>
     </div>
 
@@ -413,6 +446,60 @@
   const faqList = document.getElementById("faqList");
   const formHint = document.getElementById("formHint");
   const adminToggleBtn = document.getElementById("adminToggle");
+
+  // ===== CHRISTMAS MODE =====
+
+const xmasToggle = document.getElementById("xmasToggle");
+let xmasEnabled = false;
+let snowContainer = null;
+let snowInterval = null;
+
+function startSnow() {
+  if (snowContainer) return;
+
+  snowContainer = document.createElement("div");
+  snowContainer.id = "snowContainer";
+  document.body.appendChild(snowContainer);
+
+  // Generate snowflakes at intervals
+  snowInterval = setInterval(() => {
+    const flake = document.createElement("div");
+    flake.className = "snowflake";
+    flake.textContent = "❄";
+
+    // Random starting position and size
+    const size = Math.random() * 1.2 + 0.4;
+    flake.style.fontSize = size + "rem";
+    flake.style.left = Math.random() * 100 + "vw";
+    flake.style.animationDuration = 4 + Math.random() * 6 + "s";
+
+    snowContainer.appendChild(flake);
+
+    // Clean up after falling
+    setTimeout(() => flake.remove(), 12000);
+  }, 200);
+}
+
+function stopSnow() {
+  if (snowContainer) snowContainer.remove();
+  snowContainer = null;
+
+  if (snowInterval) clearInterval(snowInterval);
+  snowInterval = null;
+}
+
+xmasToggle.addEventListener("click", () => {
+  xmasEnabled = !xmasEnabled;
+
+  if (xmasEnabled) {
+    startSnow();
+    xmasToggle.textContent = "Disable Christmas";
+  } else {
+    stopSnow();
+    xmasToggle.textContent = "Christmas mode";
+  }
+});
+
 
   // ===== ADMIN HANDLING =====
   function updateAdminUI() {

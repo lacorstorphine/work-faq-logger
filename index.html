@@ -854,6 +854,9 @@ faqForm.addEventListener("submit", async (e) => {
       }, 2000);
     }
 
+     // Clear any previous error now that save succeeded
+    errorBox.textContent = "";
+
     faqForm.reset();
     resetEditing();
     renderList();

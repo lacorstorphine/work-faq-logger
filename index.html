@@ -755,6 +755,20 @@ xmasToggle.addEventListener("click", () => {
       .map(t => t.trim())
       .filter(Boolean);
 
+    const tags = tagsInput.value
+  .split(",")
+  .map(t => t.trim())
+  .filter(Boolean);
+
+// NEW: require at least one tag
+if (tags.length === 0) {
+  showError("Please add at least one tag before saving.");
+  setStatus("Save cancelled.");
+  tagsInput.focus();
+  return;
+}
+
+
     // If we're editing an existing FAQ, only admin can do that
     if (editingId && !isAdmin) {
       window.alert("Only admin can edit existing FAQs.");

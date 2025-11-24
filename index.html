@@ -741,34 +741,7 @@ xmasToggle.addEventListener("click", () => {
     formHint.textContent = "";
   }
 
-  // ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK + HYSTERESIS) =====
-  faqForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const question = questionInput.value.trim();
-    if (!question) return;
-
-    const answer = answerInput.value.trim();
-    const video = videoInput.value.trim();
-    const tags = tagsInput.value
-      .split(",")
-      .map(t => t.trim())
-      .filter(Boolean);
-
-    const tags = tagsInput.value
-  .split(",")
-  .map(t => t.trim())
-  .filter(Boolean);
-
-// NEW: require at least one tag
-if (tags.length === 0) {
-  showError("Please add at least one tag before saving.");
-  setStatus("Save cancelled.");
-  tagsInput.focus();
-  return;
-}
-
-// ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK + TAG VALIDATION) =====
+ // ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK + TAG VALIDATION) =====
 faqForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -889,6 +862,7 @@ faqForm.addEventListener("submit", async (e) => {
     setStatus("Save failed.");
   }
 });
+
 
 
   clearFormButton.addEventListener("click", () => {

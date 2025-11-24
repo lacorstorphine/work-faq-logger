@@ -179,14 +179,16 @@
       border: 1px solid var(--danger);
     }
 
-    .faq-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      max-height: 420px;
-      overflow-y: auto;
-      margin-top: 1rem;
-    }
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;                /* fill the bottom section */
+  overflow-y: auto;
+  margin-top: 1rem;
+  box-sizing: border-box;
+}
+
 
     .faq-item {
       border-radius: 0.75rem;
@@ -292,20 +294,25 @@
     }
 
     /* Main second card layout */
-    .main-card {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      box-sizing: border-box;
-      margin-bottom: 0;
-    }
+.main-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  margin-bottom: 0;
+  min-height: 60vh;   /* makes the whole card tall enough to split */
+}
 
-    .main-grid {
-      display: flex;
-      gap: 1.25rem;
-      align-items: stretch;
-      margin-bottom: 1rem;
-    }
+
+.main-grid {
+  display: flex;
+  gap: 1.25rem;
+  align-items: stretch;
+  margin-bottom: 1rem;
+  flex: 0 0 50%;      /* take roughly the top half of main-card */
+  min-height: 0;
+}
+
 
     .main-box {
       flex: 3 1 0;
@@ -324,9 +331,14 @@
       box-sizing: border-box;
     }
 
-    .search-area {
-      margin-top: 0.25rem;
-    }
+.search-area {
+  margin-top: 0.25rem;
+  flex: 1;                     /* bottom section fills remaining space */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
 
     .main-box-title {
       margin: 0 0 0.35rem 0;
@@ -387,62 +399,11 @@
       }
     }
 
-    /* Make the top row take roughly half the screen */
-.main-grid {
-  display: flex;
-  gap: 1.25rem;
-  align-items: stretch;
-  margin-bottom: 1rem;
-  height: 45vh;                  /* adjust to taste (40–50vh works well) */
-  box-sizing: border-box;
-}
-
-/* Selected question and Top questions should stretch fully */
-.main-box,
-.top-box {
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-/* Selected question content scrolls if long */
-#selectedFaqContent {
+   #selectedFaqContent {
   overflow-y: auto;
   max-height: 100%;
-  padding-right: 0.25rem;        /* avoids scrollbar overlap */
+  padding-right: 0.25rem;
   box-sizing: border-box;
-}
-
-/* Bottom half takes remaining height */
-.search-area {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-/* FAQ archive list scrolls properly */
-.faq-list {
-  flex: 1;
-  overflow-y: auto;
-  margin-top: 1rem;
-  box-sizing: border-box;
-}
-
-/* Make the whole app use ~90% width */
-.app {
-  width: 90vw;
-  max-width: 1600px;             /* optional – prevents extreme stretching */
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-
-/* Slight tightening of padding for a denser look */
-@media (min-width: 640px) {
-  .card {
-    padding: 1rem 1.25rem;
-  }
 }
 
   </style>

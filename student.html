@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student FAQs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #020617;
+      --border: #1e293b;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+    }
+
+    html[data-theme="light"] {
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --border: #d1d5db;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #0ea5e9;
+      --accent-soft: rgba(14, 165, 233, 0.08);
+    }
+
+    html {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      max-width: 900px;
+      width: 100%;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 1rem;
+      padding: 1.25rem 1.5rem;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: .4rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font: inherit;
+      box-sizing: border-box;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.45rem 0.9rem;
+      font: inherit;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text);
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .faq-item {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 0.75rem 0.9rem;
+      background: radial-gradient(circle at top left, var(--accent-soft), transparent 55%);
+    }
+
+    .faq-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      align-items: baseline;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .faq-answer {
+      margin-top: 0.4rem;
+      white-space: pre-line;
+      font-size: 0.9rem;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="card">
+    <div class="card-header">
+      <h1>Student FAQs</h1>
+      <button type="button" id="themeToggle">Toggle theme</button>
+    </div>
+    <p class="muted">FAQs that apply to students only (tagged “student”).</p>
+
+    <label for="searchInput" class="hint">Search</label>
+    <input id="searchInput" type="text" placeholder="Search student FAQs…" />
+  </div>
+
+  <div class="card">
+    <div id="statusBox" class="status"></div>
+    <div id="faqList" class="faq-list"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+  // same config as main app
+  const firebaseConfig = {
+    apiKey: "AIzaSyADy9Kac_a_F_4v2BkAZkD1WhDTqCTACuE",
+    authDomain: "work-faq-logger.firebaseapp.com",
+    projectId: "work-faq-logger",
+    storageBucket: "work-faq-logger.firebasestorage.app",
+    messagingSenderId: "141636449990",
+    appId: "1:141636449990:web:acfbd248f42cfda629c9c7",
+    measurementId: "G-V66S24L0DV"
+  };
+
+  // theme handling (same pattern as main page)
+  const THEME_KEY = "faq_theme_preference";
+  const htmlEl = document.documentElement;
+  const themeToggleBtn = document.getElementById("themeToggle");
+
+  function applyTheme(theme) {
+    htmlEl.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+    themeToggleBtn.textContent = theme === "dark" ? "Light mode" : "Dark mode";
+  }
+
+  function initTheme() {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === "light" || stored === "dark") {
+      applyTheme(stored);
+      return;
+    }
+    const prefersDark = window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(prefersDark ? "dark" : "light");
+  }
+
+  themeToggleBtn.addEventListener("click", () => {
+    const current = htmlEl.getAttribute("data-theme") || "dark";
+    applyTheme(current === "dark" ? "light" : "dark");
+  });
+
+  initTheme();
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const faqsCol = collection(db, "faqs");
+
+  const faqList = document.getElementById("faqList");
+  const searchInput = document.getElementById("searchInput");
+  const statusBox = document.getElementById("statusBox");
+
+  let faqItems = [];
+
+  function setStatus(msg) {
+    statusBox.textContent = msg;
+  }
+
+  function renderList() {
+    const q = searchInput.value.toLowerCase().trim();
+    faqList.innerHTML = "";
+
+    let items = faqItems;
+    if (q) {
+      items = items.filter(item => {
+        const text = (item.question + " " + item.answer).toLowerCase();
+        return text.includes(q);
+      });
+    }
+
+    if (!items.length) {
+      const p = document.createElement("p");
+      p.className = "muted";
+      p.textContent = faqItems.length
+        ? "No student FAQs match your search."
+        : "No student FAQs found.";
+      faqList.appendChild(p);
+      return;
+    }
+
+    items.forEach(item => {
+      const wrap = document.createElement("div");
+      wrap.className = "faq-item";
+
+      const header = document.createElement("div");
+      header.className = "faq-header";
+
+      const title = document.createElement("strong");
+      title.textContent = item.question;
+
+      const badge = document.createElement("div");
+      badge.className = "badge";
+      badge.textContent = (item.count || 0) + " times";
+
+      const answer = document.createElement("div");
+      answer.className = "faq-answer";
+      answer.textContent = item.answer || "No answer saved yet.";
+
+      header.appendChild(title);
+      header.appendChild(badge);
+      wrap.appendChild(header);
+      wrap.appendChild(answer);
+
+      faqList.appendChild(wrap);
+    });
+  }
+
+  async function loadStudentFaqs() {
+    setStatus("Loading student FAQs…");
+    try {
+      const snap = await getDocs(query(faqsCol, orderBy("createdAt", "desc")));
+      faqItems = [];
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        const tags = Array.isArray(data.tags) ? data.tags : [];
+        const hasStudentTag = tags.includes("student");
+
+        if (!hasStudentTag) return;
+
+        faqItems.push({
+          id: docSnap.id,
+          question: data.question || "",
+          answer: data.answer || "",
+          count: data.count || 0,
+          createdAt: data.createdAt || 0
+        });
+      });
+
+      setStatus("Loaded " + faqItems.length + " student FAQs.");
+      renderList();
+    } catch (e) {
+      setStatus("Failed to load student FAQs.");
+      console.error(e);
+    }
+  }
+
+  searchInput.addEventListener("input", renderList);
+
+  loadStudentFaqs();
+</script>
+</body>
+</html>

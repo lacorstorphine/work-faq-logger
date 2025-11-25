@@ -149,6 +149,17 @@
     }
 
     button {
+  transition: transform 0.05s ease, opacity 0.1s ease;
+}
+
+button:active {
+  transform: translateY(2px) scale(0.98);
+  opacity: 0.85;
+  box-shadow: none;
+}
+
+
+    button {
       border: none;
       border-radius: 999px;
       padding: 0.45rem 0.9rem;

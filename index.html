@@ -626,9 +626,26 @@ xmasToggle.addEventListener("click", () => {
 
       const logBtn = document.createElement("button");
       logBtn.type = "button";
-      logBtn.textContent = "Log occurrence";
+      logBtn.textContent = "+1";
       logBtn.addEventListener("click", () => incrementCount(item.id));
       actions.appendChild(logBtn);
+
+      // Copy answer button
+const copyBtn = document.createElement("button");
+copyBtn.type = "button";
+copyBtn.className = "secondary";
+copyBtn.textContent = "Copy";
+
+copyBtn.addEventListener("click", () => {
+  navigator.clipboard.writeText(item.answer || "").then(() => {
+    setStatus("Answer copied to clipboard.");
+  }).catch(() => {
+    showError("Failed to copy to clipboard.");
+  });
+});
+
+actions.appendChild(copyBtn);
+
 
       if (isAdmin) {
         const editBtn = document.createElement("button");
@@ -788,7 +805,7 @@ faqForm.addEventListener("submit", async (e) => {
       const proceed = window.confirm(
         "This question looks similar to existing FAQ(s):\n\n" +
         list +
-        "\n\nIf you simply meant to record that this question came up again, click Cancel and use the 'Log occurrence' button on the existing FAQ.\n\nSave anyway?"
+        "\n\nIf you simply meant to record that this question came up again, click Cancel and use the '+1' button on the existing FAQ.\n\nSave anyway?"
       );
 
       if (!proceed) {

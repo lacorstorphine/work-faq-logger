@@ -283,13 +283,21 @@ html[data-theme="light"] {
       gap: 0.25rem;
     }
 
-    .tag-pill {
-      font-size: 0.75rem;
-      padding: 0.15rem 0.55rem;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--muted);
-    }
+   .tag-pill {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.1s ease, transform 0.05s ease, opacity 0.1s ease;
+}
+
+.tag-pill:hover {
+  opacity: 0.9;
+  transform: translateY(1px);
+}
+
 
     .tag-pill--muted {
       opacity: 0.8;
@@ -716,19 +724,28 @@ html[data-theme="light"] {
       const tags = document.createElement("div");
       tags.className = "faq-tags";
 
-      if (item.tags.length) {
-        item.tags.forEach(t => {
-          const pill = document.createElement("span");
-          pill.className = "tag-pill";
-          pill.textContent = t;
-          tags.appendChild(pill);
-        });
-      } else {
-        const pill = document.createElement("span");
-        pill.className = "tag-pill tag-pill--muted";
-        pill.textContent = "untagged";
-        tags.appendChild(pill);
-      }
+if (item.tags.length) {
+  item.tags.forEach(t => {
+    const pill = document.createElement("span");
+    pill.className = "tag-pill";
+    pill.textContent = t;
+
+    // Make tag clickable: set search box to this tag and re-filter
+    pill.addEventListener("click", () => {
+      searchInput.value = t;
+      renderList();
+      setStatus(`Filtered by tag: ${t}`);
+    });
+
+    tags.appendChild(pill);
+  });
+} else {
+  const pill = document.createElement("span");
+  pill.className = "tag-pill tag-pill--muted";
+  pill.textContent = "untagged";
+  tags.appendChild(pill);
+}
+
 
       wrap.appendChild(tags);
 

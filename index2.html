@@ -81,6 +81,18 @@
       box-sizing: border-box;
     }
 
+    /* DESKTOP-ONLY WIDER LAYOUT */
+@media (min-width: 1200px) {
+  .app {
+    max-width: 1600px;   /* wider screen fill on desktop */
+  }
+
+  .main-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
     .top-bar {
       background: var(--topbar-bg);
       border-radius: 1rem;

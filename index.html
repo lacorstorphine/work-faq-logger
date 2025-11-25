@@ -7,33 +7,33 @@
   <style>
 
     /* Snowflake container */
-#snowContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 9999;
-}
+    #snowContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 9999;
+    }
 
-.snowflake {
-  position: absolute;
-  top: -10px;
-  color: white;
-  font-size: 0.8rem;
-  opacity: 0.8;
-  user-select: none;
-  animation-name: fall;
-  animation-timing-function: linear;
-}
+    .snowflake {
+      position: absolute;
+      top: -10px;
+      color: white;
+      font-size: 0.8rem;
+      opacity: 0.8;
+      user-select: none;
+      animation-name: fall;
+      animation-timing-function: linear;
+    }
 
-@keyframes fall {
-  to {
-    transform: translateY(110vh);
-  }
-}
+    @keyframes fall {
+      to {
+        transform: translateY(110vh);
+      }
+    }
 
     :root {
       /* default (dark) */
@@ -272,6 +272,31 @@
       padding: 0.3rem 0.7rem;
     }
 
+    /* Copy button */
+    .copy-btn {
+      position: relative;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      background: transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .copy-btn svg {
+      width: 1.1rem;
+      height: 1.1rem;
+      fill: currentColor;
+    }
+
+    .copy-btn:hover {
+      background: rgba(148, 163, 184, 0.15);
+    }
+
     @media (max-width: 640px) {
       .card {
         padding: 1rem;
@@ -299,7 +324,7 @@
         <button type="button" class="secondary admin-toggle-btn" id="adminToggle">
           Admin login
         </button>
-        <button type="button" class="secondary" id="xmasToggle">
+        <button type="button" class="secondary" id="xmasToggle" aria-label="Toggle Christmas mode">
           🎅
         </button>
       </div>
@@ -446,60 +471,58 @@
   const faqList = document.getElementById("faqList");
   const formHint = document.getElementById("formHint");
   const adminToggleBtn = document.getElementById("adminToggle");
+  const xmasToggle = document.getElementById("xmasToggle");
 
   // ===== CHRISTMAS MODE =====
+  let xmasEnabled = false;
+  let snowContainer = null;
+  let snowInterval = null;
 
-const xmasToggle = document.getElementById("xmasToggle");
-let xmasEnabled = false;
-let snowContainer = null;
-let snowInterval = null;
+  function startSnow() {
+    if (snowContainer) return;
 
-function startSnow() {
-  if (snowContainer) return;
+    snowContainer = document.createElement("div");
+    snowContainer.id = "snowContainer";
+    document.body.appendChild(snowContainer);
 
-  snowContainer = document.createElement("div");
-  snowContainer.id = "snowContainer";
-  document.body.appendChild(snowContainer);
+    // Generate snowflakes at intervals
+    snowInterval = setInterval(() => {
+      const flake = document.createElement("div");
+      flake.className = "snowflake";
+      flake.textContent = "❄";
 
-  // Generate snowflakes at intervals
-  snowInterval = setInterval(() => {
-    const flake = document.createElement("div");
-    flake.className = "snowflake";
-    flake.textContent = "❄";
+      // Random starting position and size
+      const size = Math.random() * 1.2 + 0.4;
+      flake.style.fontSize = size + "rem";
+      flake.style.left = Math.random() * 100 + "vw";
+      flake.style.animationDuration = 4 + Math.random() * 6 + "s";
 
-    // Random starting position and size
-    const size = Math.random() * 1.2 + 0.4;
-    flake.style.fontSize = size + "rem";
-    flake.style.left = Math.random() * 100 + "vw";
-    flake.style.animationDuration = 4 + Math.random() * 6 + "s";
+      snowContainer.appendChild(flake);
 
-    snowContainer.appendChild(flake);
-
-    // Clean up after falling
-    setTimeout(() => flake.remove(), 12000);
-  }, 200);
-}
-
-function stopSnow() {
-  if (snowContainer) snowContainer.remove();
-  snowContainer = null;
-
-  if (snowInterval) clearInterval(snowInterval);
-  snowInterval = null;
-}
-
-xmasToggle.addEventListener("click", () => {
-  xmasEnabled = !xmasEnabled;
-
-  if (xmasEnabled) {
-    startSnow();
-    xmasToggle.textContent = "🎅";
-  } else {
-    stopSnow();
-    xmasToggle.textContent = "🎅";
+      // Clean up after falling
+      setTimeout(() => flake.remove(), 12000);
+    }, 200);
   }
-});
 
+  function stopSnow() {
+    if (snowContainer) snowContainer.remove();
+    snowContainer = null;
+
+    if (snowInterval) clearInterval(snowInterval);
+    snowInterval = null;
+  }
+
+  xmasToggle.addEventListener("click", () => {
+    xmasEnabled = !xmasEnabled;
+
+    if (xmasEnabled) {
+      startSnow();
+      xmasToggle.textContent = "❄";
+    } else {
+      stopSnow();
+      xmasToggle.textContent = "🎅";
+    }
+  });
 
   // ===== ADMIN HANDLING =====
   function updateAdminUI() {
@@ -613,7 +636,16 @@ xmasToggle.addEventListener("click", () => {
           href = "https://" + href;
         }
 
-        vid.innerHTML = `Video: <a href="${href}" target="_blank" rel="noopener">${item.video}</a>`;
+        const label = document.createTextNode("Video: ");
+
+        const link = document.createElement("a");
+        link.href = href;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = item.video;
+
+        vid.appendChild(label);
+        vid.appendChild(link);
         wrap.appendChild(vid);
       }
 
@@ -629,6 +661,39 @@ xmasToggle.addEventListener("click", () => {
       logBtn.textContent = "Log occurrence";
       logBtn.addEventListener("click", () => incrementCount(item.id));
       actions.appendChild(logBtn);
+
+      // Copy button
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "copy-btn";
+      copyBtn.setAttribute("aria-label", "Copy question and answer");
+      copyBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="7" y="7" width="10" height="10" rx="2" ry="2" />
+          <rect x="4" y="4" width="10" height="10" rx="2" ry="2" />
+        </svg>
+      `;
+      copyBtn.addEventListener("click", async () => {
+        const textToCopy = `${item.question}\n\n${item.answer || ""}`.trim();
+
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(textToCopy);
+            setStatus("Copied FAQ to clipboard.");
+          } else {
+            const tmp = document.createElement("textarea");
+            tmp.value = textToCopy;
+            document.body.appendChild(tmp);
+            tmp.select();
+            document.execCommand("copy");
+            document.body.removeChild(tmp);
+            setStatus("Copied FAQ to clipboard.");
+          }
+        } catch (e) {
+          showError("Failed to copy FAQ: " + e.message);
+        }
+      });
+      actions.appendChild(copyBtn);
 
       if (isAdmin) {
         const editBtn = document.createElement("button");
@@ -741,132 +806,130 @@ xmasToggle.addEventListener("click", () => {
     formHint.textContent = "";
   }
 
- // ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK + TAG VALIDATION) =====
-faqForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+  // ===== FORM SUBMIT (CREATE / UPDATE WITH DUPLICATE CHECK + TAG VALIDATION) =====
+  faqForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const question = questionInput.value.trim();
-  if (!question) return;
+    const question = questionInput.value.trim();
+    if (!question) return;
 
-  const answer = answerInput.value.trim();
-  const video = videoInput.value.trim();
-  const tags = tagsInput.value
-    .split(",")
-    .map(t => t.trim())
-    .filter(Boolean);
+    const answer = answerInput.value.trim();
+    const video = videoInput.value.trim();
+    const tags = tagsInput.value
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean);
 
-  // Require at least one tag
-  if (tags.length === 0) {
-    showError("Please add at least one tag before saving.");
-    setStatus("Save cancelled.");
-    tagsInput.focus();
-    return;
-  }
-
-  // If we're editing an existing FAQ, only admin can do that
-  if (editingId && !isAdmin) {
-    window.alert("Only admin can edit existing FAQs.");
-    return;
-  }
-
-  const questionNorm = normaliseText(question);
-
-  // Only run dupe warning if this question text hasn't already been approved
-  if (questionNorm !== lastApprovedQuestion) {
-    const softThreshold = 0.6;
-    const hardThreshold = 0.85;
-
-    const similarAll = findSimilarQuestions(question, softThreshold, editingId);
-    if (similarAll.length > 0) {
-      const similarHard = similarAll.filter(s => s.sim >= hardThreshold);
-      const useList = (similarHard.length > 0 ? similarHard : similarAll).slice(0, 5);
-
-      const list = useList
-        .map(s => `• ${s.item.question} (${Math.round(s.sim * 100)}% similar)`)
-        .join("\n");
-
-      const proceed = window.confirm(
-        "This question looks similar to existing FAQ(s):\n\n" +
-        list +
-        "\n\nIf you simply meant to record that this question came up again, click Cancel and use the 'Log occurrence' button on the existing FAQ.\n\nSave anyway?"
-      );
-
-      if (!proceed) {
-        setStatus("Save cancelled due to possible duplicate.");
-        return;
-      }
-
-      // Remember this exact question text as "approved" so we don't nag again
-      lastApprovedQuestion = questionNorm;
-    }
-  }
-
-  try {
-    if (editingId) {
-      // update existing FAQ (admin only, checked above)
-      await updateDoc(doc(faqsCol, editingId), {
-        question,
-        answer,
-        video,
-        tags
-      });
-
-      const idx = faqItems.findIndex(f => f.id === editingId);
-      if (idx !== -1) {
-        faqItems[idx].question = question;
-        faqItems[idx].answer = answer;
-        faqItems[idx].video = video;
-        faqItems[idx].tags = tags;
-      }
-
-      formHint.textContent = "FAQ updated.";
-      setStatus("FAQ updated in cloud.");
-      setTimeout(() => {
-        if (formHint.textContent === "FAQ updated.") formHint.textContent = "";
-      }, 2000);
-      editingId = null;
-    } else {
-      // create new FAQ (first occurrence counts as 1)
-      const createdAt = Date.now();
-      const docRef = await addDoc(faqsCol, {
-        question,
-        answer,
-        video,
-        tags,
-        count: 1,
-        createdAt
-      });
-
-      faqItems.unshift({
-        id: docRef.id,
-        question,
-        answer,
-        video,
-        tags,
-        count: 1,
-        createdAt
-      });
-
-      formHint.textContent = "FAQ saved.";
-      setStatus("FAQ saved to cloud.");
-      setTimeout(() => {
-        if (formHint.textContent === "FAQ saved.") formHint.textContent = "";
-      }, 2000);
+    // Require at least one tag
+    if (tags.length === 0) {
+      showError("Please add at least one tag before saving.");
+      setStatus("Save cancelled.");
+      tagsInput.focus();
+      return;
     }
 
-     // Clear any previous error now that save succeeded
-    errorBox.textContent = "";
+    // If we're editing an existing FAQ, only admin can do that
+    if (editingId && !isAdmin) {
+      window.alert("Only admin can edit existing FAQs.");
+      return;
+    }
 
-    faqForm.reset();
-    resetEditing();
-    renderList();
-  } catch (e) {
-    showError("Failed to save FAQ: " + e.message);
-    setStatus("Save failed.");
-  }
-});
+    const questionNorm = normaliseText(question);
 
+    // Only run dupe warning if this question text hasn't already been approved
+    if (questionNorm !== lastApprovedQuestion) {
+      const softThreshold = 0.6;
+      const hardThreshold = 0.85;
 
+      const similarAll = findSimilarQuestions(question, softThreshold, editingId);
+      if (similarAll.length > 0) {
+        const similarHard = similarAll.filter(s => s.sim >= hardThreshold);
+        const useList = (similarHard.length > 0 ? similarHard : similarAll).slice(0, 5);
+
+        const list = useList
+          .map(s => `• ${s.item.question} (${Math.round(s.sim * 100)}% similar)`)
+          .join("\n");
+
+        const proceed = window.confirm(
+          "This question looks similar to existing FAQ(s):\n\n" +
+          list +
+          "\n\nIf you simply meant to record that this question came up again, click Cancel and use the 'Log occurrence' button on the existing FAQ.\n\nSave anyway?"
+        );
+
+        if (!proceed) {
+          setStatus("Save cancelled due to possible duplicate.");
+          return;
+        }
+
+        // Remember this exact question text as "approved" so we don't nag again
+        lastApprovedQuestion = questionNorm;
+      }
+    }
+
+    try {
+      if (editingId) {
+        // update existing FAQ (admin only, checked above)
+        await updateDoc(doc(faqsCol, editingId), {
+          question,
+          answer,
+          video,
+          tags
+        });
+
+        const idx = faqItems.findIndex(f => f.id === editingId);
+        if (idx !== -1) {
+          faqItems[idx].question = question;
+          faqItems[idx].answer = answer;
+          faqItems[idx].video = video;
+          faqItems[idx].tags = tags;
+        }
+
+        formHint.textContent = "FAQ updated.";
+        setStatus("FAQ updated in cloud.");
+        setTimeout(() => {
+          if (formHint.textContent === "FAQ updated.") formHint.textContent = "";
+        }, 2000);
+        editingId = null;
+      } else {
+        // create new FAQ (first occurrence counts as 1)
+        const createdAt = Date.now();
+        const docRef = await addDoc(faqsCol, {
+          question,
+          answer,
+          video,
+          tags,
+          count: 1,
+          createdAt
+        });
+
+        faqItems.unshift({
+          id: docRef.id,
+          question,
+          answer,
+          video,
+          tags,
+          count: 1,
+          createdAt
+        });
+
+        formHint.textContent = "FAQ saved.";
+        setStatus("FAQ saved to cloud.");
+        setTimeout(() => {
+          if (formHint.textContent === "FAQ saved.") formHint.textContent = "";
+        }, 2000);
+      }
+
+      // Clear any previous error now that save succeeded
+      errorBox.textContent = "";
+
+      faqForm.reset();
+      resetEditing();
+      renderList();
+    } catch (e) {
+      showError("Failed to save FAQ: " + e.message);
+      setStatus("Save failed.");
+    }
+  });
 
   clearFormButton.addEventListener("click", () => {
     faqForm.reset();
@@ -888,3 +951,4 @@ faqForm.addEventListener("submit", async (e) => {
 
 </body>
 </html>
+```

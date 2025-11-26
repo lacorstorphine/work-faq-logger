@@ -1,18 +1,3 @@
-This is a great question.
-
-The reason you see plain text right now is that we are using `window.prompt()`, which is a built-in browser tool that **cannot** be masked as a password. Browsers simply don't allow it for security reasons.
-
-To fix this, we need to create a small **Custom Login Modal** (a popup box) inside your HTML. This allows us to use a real `<input type="password">`.
-
-Here is the **final, complete version**. I have:
-
-1.  Added a hidden **Login Popup** to the HTML.
-2.  Added **CSS** to make the popup look good (dark mode compatible).
-3.  Updated the **JavaScript** so clicking "Admin Login" opens this secure popup instead of the browser text box.
-
-**Replace your entire file with this:**
-
-```html
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>

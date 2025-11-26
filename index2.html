@@ -1,3 +1,18 @@
+This is a great question.
+
+The reason you see plain text right now is that we are using `window.prompt()`, which is a built-in browser tool that **cannot** be masked as a password. Browsers simply don't allow it for security reasons.
+
+To fix this, we need to create a small **Custom Login Modal** (a popup box) inside your HTML. This allows us to use a real `<input type="password">`.
+
+Here is the **final, complete version**. I have:
+
+1.  Added a hidden **Login Popup** to the HTML.
+2.  Added **CSS** to make the popup look good (dark mode compatible).
+3.  Updated the **JavaScript** so clicking "Admin Login" opens this secure popup instead of the browser text box.
+
+**Replace your entire file with this:**
+
+```html
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -147,6 +162,7 @@
     }
 
     input[type="text"],
+    input[type="password"], 
     textarea {
       width: 100%;
       padding: 0.5rem 0.6rem;
@@ -320,6 +336,23 @@
       top: 1.5rem;
     }
 
+    /* LOGIN MODAL (DIALOG) STYLES */
+    dialog {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(2px);
+    }
+
     /* Expand button - Hidden by default (Mobile) */
     .expand-btn {
       display: none; 
@@ -491,6 +524,22 @@
 
 </div>
 
+<dialog id="loginDialog">
+  <h2 class="card-title" style="margin-top:0;">Admin Login</h2>
+  <form id="loginForm" method="dialog">
+    <label for="adminUsername">Username</label>
+    <input type="text" id="adminUsername" required style="margin-bottom: 1rem;" />
+    
+    <label for="adminPassword">Password</label>
+    <input type="password" id="adminPassword" required style="margin-bottom: 1.5rem;" />
+    
+    <div class="row" style="justify-content: flex-end;">
+      <button type="button" class="secondary" id="cancelLoginBtn">Cancel</button>
+      <button type="submit">Log in</button>
+    </div>
+  </form>
+</dialog>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
   import {
@@ -595,6 +644,13 @@
   const adminToggleBtn = document.getElementById("adminToggle");
   const xmasToggle = document.getElementById("xmasToggle");
 
+  // LOGIN MODAL ELEMENTS
+  const loginDialog = document.getElementById("loginDialog");
+  const loginForm = document.getElementById("loginForm");
+  const adminUsernameInput = document.getElementById("adminUsername");
+  const adminPasswordInput = document.getElementById("adminPassword");
+  const cancelLoginBtn = document.getElementById("cancelLoginBtn");
+
   // ===== CHRISTMAS MODE =====
   let xmasEnabled = false;
   let snowContainer = null;
@@ -637,7 +693,7 @@
     }
   });
 
-  // ===== SECURE ADMIN HANDLING (USERNAME VERSION) =====
+  // ===== SECURE ADMIN HANDLING (MODAL VERSION) =====
   onAuthStateChanged(auth, (user) => {
     if (user) {
       isAdmin = true;
@@ -655,35 +711,50 @@
     renderList();
   });
 
+  // Open Modal
   adminToggleBtn.addEventListener("click", () => {
     if (!isAdmin) {
-      const username = window.prompt("Admin Username:");
-      if (!username) return;
-      
-      const pw = window.prompt("Admin Password:");
-      if (!pw) return;
-
-      const fakeEmail = username + "@bmslogger.local";
-
-      setStatus("Logging in...");
-      signInWithEmailAndPassword(auth, fakeEmail, pw)
-        .then(() => {
-          // Success handled by onAuthStateChanged
-        })
-        .catch((error) => {
-          if(error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found') {
-             window.alert("Login failed: Username not found.");
-          } else {
-             window.alert("Login failed: " + error.message);
-          }
-          setStatus("Login failed.");
-        });
+      loginDialog.showModal();
+      adminUsernameInput.focus();
     } else {
       signOut(auth).then(() => {
         setStatus("Logged out.");
       });
     }
   });
+
+  // Close Modal
+  cancelLoginBtn.addEventListener("click", () => {
+    loginDialog.close();
+  });
+
+  // Handle Login Submit
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault(); // Stop page reload
+
+    const username = adminUsernameInput.value.trim();
+    const pw = adminPasswordInput.value;
+    const fakeEmail = username + "@bmslogger.local";
+
+    setStatus("Logging in...");
+    
+    signInWithEmailAndPassword(auth, fakeEmail, pw)
+      .then(() => {
+        loginDialog.close();
+        loginForm.reset(); // Clear inputs for security
+      })
+      .catch((error) => {
+        if(error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found') {
+            window.alert("Login failed: Username not found.");
+        } else if (error.code === 'auth/wrong-password') {
+            window.alert("Login failed: Incorrect password.");
+        } else {
+            window.alert("Login failed: " + error.message);
+        }
+        setStatus("Login failed.");
+      });
+  });
+
 
   // ===== DUPLICATE CHECKING =====
   function normaliseText(str) {

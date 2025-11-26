@@ -81,8 +81,8 @@
       box-sizing: border-box;
     }
 
-    /* DESKTOP-ONLY WIDER LAYOUT */
-/* DESKTOP-ONLY LAYOUT & LOGIC */
+  
+/* DESKTOP-ONLY WIDER LAYOUT & LOGIC */
     @media (min-width: 1200px) {
       .app {
         max-width: 1600px;
@@ -92,46 +92,6 @@
         grid-template-columns: 1fr 1fr;
         gap: 2rem;
       }
-
-      /* Show the expand button ONLY on desktop */
-      .expand-btn {
-        display: block; 
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: transparent;
-        border: none;
-        color: var(--muted);
-        font-size: 1.1rem;
-        cursor: pointer;
-        line-height: 1;
-        z-index: 10;
-        padding: 5px;
-      }
-
-      .expand-btn:hover {
-        color: var(--accent);
-        transform: scale(1.1);
-      }
-
-      /* THE FOCUS MODE STATE (Desktop Only) */
-      .card.expanded {
-        position: fixed;
-        top: 5vh; /* 5% from top */
-        left: 50%; /* Center horizontally... */
-        transform: translateX(-50%); /* ...using transform */
-        
-        width: 90vw; /* 90% of screen width... */
-        max-width: 1600px; /* ...but never wider than the main app (1600px) */
-        height: 90vh;
-        
-        z-index: 10000;
-        margin: 0;
-        overflow-y: auto;
-        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.85);
-        border-color: var(--accent);
-      }
-    }
 
     .top-bar {
       background: var(--topbar-bg);
@@ -459,6 +419,45 @@
   box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.85); 
   border-color: var(--accent);
 }
+       /* Show the expand button ONLY on desktop */
+      .expand-btn {
+        display: block; 
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        font-size: 1.1rem;
+        cursor: pointer;
+        line-height: 1;
+        z-index: 10;
+        padding: 5px;
+      }
+
+      .expand-btn:hover {
+        color: var(--accent);
+        transform: scale(1.1);
+      }
+
+      /* THE FOCUS MODE STATE (Desktop Only) */
+      .card.expanded {
+        position: fixed;
+        top: 5vh; /* 5% from top */
+        left: 50%; /* Center horizontally... */
+        transform: translateX(-50%); /* ...using transform */
+        
+        width: 90vw; /* 90% of screen width... */
+        max-width: 1600px; /* ...but never wider than the main app (1600px) */
+        height: 90vh;
+        
+        z-index: 10000;
+        margin: 0;
+        overflow-y: auto;
+        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.85);
+        border-color: var(--accent);
+      }
+    }
     
   </style>
 </head>

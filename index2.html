@@ -129,13 +129,12 @@
     }
 
 .main-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr;
-      gap: 1.75rem;
-      /* Ensures both cards start at the exact same vertical line */
-      align-items: start; 
-      align-content: start;
-    }
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        /* Force vertical alignment to the top */
+        align-items: start; 
+        align-content: start;
+      }
 
     .card {
       background: var(--card-bg);

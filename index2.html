@@ -365,6 +365,54 @@
       outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
+
+    /* Enable positioning for the button */
+.card {
+  position: relative; 
+  transition: all 0.3s ease-in-out; /* Smooth animation */
+}
+
+/* The button styles */
+.expand-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 10;
+  padding: 5px;
+}
+
+.expand-btn:hover {
+  color: var(--accent);
+  transform: scale(1.1);
+}
+
+/* THE FOCUS MODE STATE */
+.card.expanded {
+  position: fixed;
+  top: 2%;
+  left: 2%;
+  width: 96%;
+  height: 96%;
+  z-index: 10000; /* Sit on top of everything, even snow */
+  
+  /* Reset margins/grid constraints */
+  margin: 0;
+  max-width: none;
+  
+  /* Ensure we can scroll inside the card if content is long */
+  overflow-y: auto;
+  
+  /* "Dim the lights" behind the card */
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.85); 
+  border-color: var(--accent);
+}
+    
   </style>
 </head>
 <body>
@@ -389,6 +437,22 @@
       </button>
     </div>
   </header>
+
+  <div class="card" id="cardLeft">
+  <button type="button" class="expand-btn" onclick="toggleExpand('cardLeft', this)">
+    ⤢
+  </button>
+
+    <div class="card archive-card" id="cardRight">
+  <button type="button" class="expand-btn" onclick="toggleExpand('cardRight', this)">
+    ⤢
+  </button>
+
+  <h2 class="card-title">Search FAQs</h2>
+  </div>
+  
+  <h2 class="card-title">Add / Edit FAQ</h2>
+  </div>
 
   <div class="main-grid">
     <!-- LEFT: ADD / EDIT FAQ -->
@@ -1012,6 +1076,28 @@
   });
 
   loadFAQs();
+
+// Toggle Focus Mode
+  window.toggleExpand = function(cardId, btn) {
+    const card = document.getElementById(cardId);
+    
+    // Toggle the class
+    card.classList.toggle("expanded");
+    
+    // Check if it is NOW expanded or not to swap the icon
+    const isExpanded = card.classList.contains("expanded");
+    
+    if (isExpanded) {
+      btn.textContent = "✕"; // Change to Close icon
+      btn.title = "Close focus mode";
+      document.body.style.overflow = "hidden"; // Stop background page scrolling
+    } else {
+      btn.textContent = "⤢"; // Change back to Expand icon
+      btn.title = "Expand to focus";
+      document.body.style.overflow = ""; // Re-enable page scrolling
+    }
+  };
+  
 </script>
 
 </body>

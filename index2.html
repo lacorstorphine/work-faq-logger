@@ -422,7 +422,6 @@
   <header class="top-bar">
     <div class="top-left">
       <h1>BROADCAST AND MEDIA SYSTEMS FAQ LOGGER 🪵</h1>
-      <p class="muted">Cloud-synced FAQs you can use from any device.</p>
       <p class="hint">Don’t enter names, IDs or other personal data. This is for general how-to steps only.</p>
     </div>
     <div class="top-right">
@@ -438,25 +437,14 @@
     </div>
   </header>
 
-  <div class="card" id="cardLeft">
-  <button type="button" class="expand-btn" onclick="toggleExpand('cardLeft', this)">
-    ⤢
-  </button>
-
-    <div class="card archive-card" id="cardRight">
-  <button type="button" class="expand-btn" onclick="toggleExpand('cardRight', this)">
-    ⤢
-  </button>
-
-  <h2 class="card-title">Search FAQs</h2>
-  </div>
-  
-  <h2 class="card-title">Add / Edit FAQ</h2>
-  </div>
-
   <div class="main-grid">
-    <!-- LEFT: ADD / EDIT FAQ -->
-    <div class="card">
+    
+    <div class="card" id="cardLeft">
+      
+      <button type="button" class="expand-btn" onclick="toggleExpand('cardLeft', this)">
+        ⤢
+      </button>
+
       <h2 class="card-title">Add / Edit FAQ</h2>
 
       <form id="faqForm">
@@ -483,8 +471,12 @@
       </form>
     </div>
 
-    <!-- RIGHT: SEARCH / ARCHIVE -->
-    <div class="card archive-card">
+    <div class="card archive-card" id="cardRight">
+      
+      <button type="button" class="expand-btn" onclick="toggleExpand('cardRight', this)">
+        ⤢
+      </button>
+
       <h2 class="card-title">Search FAQs</h2>
 
       <label for="searchInput" style="margin-bottom:.35rem;">Search</label>

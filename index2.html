@@ -647,29 +647,117 @@
     }
   });
 
-  // ===== ADMIN HANDLING =====
-  function updateAdminUI() {
-    adminToggleBtn.textContent = isAdmin ? "Log out (admin)" : "Admin login";
-    setStatus(isAdmin ? "Admin mode enabled." : "Admin mode disabled.");
-    renderList();
-  }
-
-  adminToggleBtn.addEventListener("click", () => {
-    if (!isAdmin) {
-      const pw = window.prompt("Enter admin password:");
-      if (pw === ADMIN_PASSWORD) {
-        isAdmin = true;
-        updateAdminUI();
-      } else if (pw !== null) {
-        window.alert("Incorrect password.");
-      }
+ // ===== SECURE ADMIN HANDLING (USERNAME VERSION) =====
+  
+  // 1. Listen for login/logout state changes automatically
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isAdmin = true;
+      // Extract just the username part (remove @bmslogger.local)
+      const username = user.email.split('@')[0]; 
+      setStatus(`Logged in as ${username}`);
+      adminToggleBtn.textContent = "Log out (admin)";
     } else {
       isAdmin = false;
       editingId = null;
       faqForm.reset();
       formHint.textContent = "";
-      lastApprovedQuestion = null;
-      updateAdminUI();
+      adminToggleBtn.textContent = "Admin login";
+      // Don't clutter status if just loading
+      if(faqItems.length > 0) setStatus("Admin mode disabled.");
+    }
+    renderList(); // Re-render to show/hide Edit/Delete buttons
+  });
+
+  // 2. Button Logic
+  adminToggleBtn.addEventListener("click", () => {
+    if (!isAdmin) {
+      // Prompt for Username instead of Email
+      const username = window.prompt("Admin Username:");
+      if (!username) return;
+      
+      const pw = window.prompt("Admin Password:");
+      if (!pw) return;
+
+      // AUTOMATICALLY ADD THE FAKE DOMAIN
+      const fakeEmail = username + "@bmslogger.local";
+
+      setStatus("Logging in...");
+      signInWithEmailAndPassword(auth, fakeEmail, pw)
+        .then(() => {
+          // Success is handled by onAuthStateChanged above
+        })
+        .catch((error) => {
+          // If error, check if it's user-not-found to give a better message
+          if(error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found') {
+             window.alert("Login failed: Username not found.");
+          } else {
+             window.alert("Login failed: " + error.message);
+          }
+          setStatus("Login failed.");
+        });
+    } else {
+      // Log out
+      signOut(auth).then(() => {
+        setStatus("Logged out.");
+      });
+    }
+  });
+  
+  // ===== SECURE ADMIN HANDLING (USERNAME VERSION) =====
+  
+  // 1. Listen for login/logout state changes automatically
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isAdmin = true;
+      // Extract just the username part (remove @bmslogger.local)
+      const username = user.email.split('@')[0]; 
+      setStatus(`Logged in as ${username}`);
+      adminToggleBtn.textContent = "Log out (admin)";
+    } else {
+      isAdmin = false;
+      editingId = null;
+      faqForm.reset();
+      formHint.textContent = "";
+      adminToggleBtn.textContent = "Admin login";
+      // Don't clutter status if just loading
+      if(faqItems.length > 0) setStatus("Admin mode disabled.");
+    }
+    renderList(); // Re-render to show/hide Edit/Delete buttons
+  });
+
+  // 2. Button Logic
+  adminToggleBtn.addEventListener("click", () => {
+    if (!isAdmin) {
+      // Prompt for Username instead of Email
+      const username = window.prompt("Admin Username:");
+      if (!username) return;
+      
+      const pw = window.prompt("Admin Password:");
+      if (!pw) return;
+
+      // AUTOMATICALLY ADD THE FAKE DOMAIN
+      const fakeEmail = username + "@bmslogger.local";
+
+      setStatus("Logging in...");
+      signInWithEmailAndPassword(auth, fakeEmail, pw)
+        .then(() => {
+          // Success is handled by onAuthStateChanged above
+        })
+        .catch((error) => {
+          // If error, check if it's user-not-found to give a better message
+          if(error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found') {
+             window.alert("Login failed: Username not found.");
+          } else {
+             window.alert("Login failed: " + error.message);
+          }
+          setStatus("Login failed.");
+        });
+    } else {
+      // Log out
+      signOut(auth).then(() => {
+        setStatus("Logged out.");
+      });
     }
   });
 

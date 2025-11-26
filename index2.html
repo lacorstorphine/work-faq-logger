@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>BROADCAST MEDIA SYSTEMS FAQ Logger (Cloud)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
+ <style>
     /* Snowflake container */
     #snowContainer {
       position: fixed;
@@ -58,7 +58,9 @@
       --accent-soft: rgba(14, 165, 233, 0.08);
       --danger: #b91c1c;
       --status: #4f46e5;
-      --topbar-bg: #0f172a;
+      
+      /* FIX: Changed top bar to white for light mode */
+      --topbar-bg: #ffffff; 
     }
 
     html {
@@ -80,18 +82,6 @@
       padding: 1.5rem;
       box-sizing: border-box;
     }
-
-  
-/* DESKTOP-ONLY WIDER LAYOUT & LOGIC */
-    @media (min-width: 1200px) {
-      .app {
-        max-width: 1600px;
-      }
-
-      .main-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-      }
 
     .top-bar {
       background: var(--topbar-bg);
@@ -128,13 +118,14 @@
       gap: 0.5rem;
     }
 
-.main-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-        /* Force vertical alignment to the top */
-        align-items: start; 
-        align-content: start;
-      }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.75rem;
+      /* FIX: This forces both cards to start at the exact same top pixel */
+      align-items: start; 
+      align-content: start;
+    }
 
     .card {
       background: var(--card-bg);
@@ -142,6 +133,8 @@
       padding: 1.25rem 1.5rem;
       border: 1px solid var(--border);
       box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+      position: relative; 
+      transition: all 0.3s ease-in-out; 
     }
 
     .card-title {
@@ -223,13 +216,12 @@
       margin-top: 1rem;
     }
 
-.faq-item {
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  padding: 0.75rem 0.9rem;
-  background: var(--card-bg);
-}
-
+    .faq-item {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 0.75rem 0.9rem;
+      background: var(--card-bg);
+    }
 
     .faq-header {
       display: flex;
@@ -331,34 +323,25 @@
       top: 1.5rem;
     }
 
-    @media (max-width: 768px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .archive-card {
-        position: static;
-      }
+    /* Expand button - Hidden by default (Mobile) */
+    .expand-btn {
+      display: none; 
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+      z-index: 10;
+      padding: 5px;
     }
 
-    @media (max-width: 640px) {
-      .card {
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-      }
-
-      h1 {
-        font-size: 1.2rem;
-      }
-
-      .top-bar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .top-right {
-        justify-content: flex-start;
-      }
+    .expand-btn:hover {
+      color: var(--accent);
+      transform: scale(1.1);
     }
 
     input:focus,
@@ -367,87 +350,65 @@
       outline-offset: 2px;
     }
 
-    /* Enable positioning for the button */
-.card {
-  position: relative; 
-  transition: all 0.3s ease-in-out; /* Smooth animation */
-}
+    /* MEDIA QUERIES */
 
-/* The button styles */
-.expand-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  font-size: 1.1rem;
-  cursor: pointer;
-  line-height: 1;
-  z-index: 10;
-  padding: 5px;
-}
-
-.expand-btn:hover {
-  color: var(--accent);
-  transform: scale(1.1);
-}
-
-    /* Hide expand button by default (mobile/tablet) */
-    .expand-btn {
-      display: none; 
+    /* Tablet/Mobile Stack */
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .archive-card {
+        position: static;
+      }
     }
 
-/* THE FOCUS MODE STATE */
-.card.expanded {
-  position: fixed;
-  top: 2%;
-  left: 2%;
-  width: 96%;
-  height: 96%;
-  z-index: 10000; /* Sit on top of everything, even snow */
-  
-  /* Reset margins/grid constraints */
-  margin: 0;
-  max-width: none;
-  
-  /* Ensure we can scroll inside the card if content is long */
-  overflow-y: auto;
-  
-  /* "Dim the lights" behind the card */
-  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.85); 
-  border-color: var(--accent);
-}
-       /* Show the expand button ONLY on desktop */
-      .expand-btn {
-        display: block; 
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: transparent;
-        border: none;
-        color: var(--muted);
-        font-size: 1.1rem;
-        cursor: pointer;
-        line-height: 1;
-        z-index: 10;
-        padding: 5px;
+    /* Small Mobile */
+    @media (max-width: 640px) {
+      .card {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      h1 {
+        font-size: 1.2rem;
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .top-right {
+        justify-content: flex-start;
+      }
+    }
+
+    /* DESKTOP-ONLY LAYOUT & LOGIC (Must be at the bottom) */
+    @media (min-width: 1200px) {
+      .app {
+        max-width: 1600px;
       }
 
-      .expand-btn:hover {
-        color: var(--accent);
-        transform: scale(1.1);
+      .main-grid {
+        /* Force 2 columns */
+        grid-template-columns: 1fr 1fr; 
+        gap: 2rem;
+        /* Force Top Alignment */
+        align-items: start; 
+        align-content: start;
+      }
+
+      /* Show the expand button ONLY on desktop */
+      .expand-btn {
+        display: block; 
       }
 
       /* THE FOCUS MODE STATE (Desktop Only) */
       .card.expanded {
         position: fixed;
-        top: 5vh; /* 5% from top */
-        left: 50%; /* Center horizontally... */
-        transform: translateX(-50%); /* ...using transform */
+        top: 5vh; 
+        left: 50%; 
+        transform: translateX(-50%); 
         
-        width: 90vw; /* 90% of screen width... */
-        max-width: 1600px; /* ...but never wider than the main app (1600px) */
+        width: 90vw; 
+        max-width: 1600px;
         height: 90vh;
         
         z-index: 10000;
@@ -457,7 +418,6 @@
         border-color: var(--accent);
       }
     }
-    
   </style>
 </head>
 <body>

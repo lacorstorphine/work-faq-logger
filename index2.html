@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>BROADCAST MEDIA SYSTEMS FAQ Logger (Cloud)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
- <style>
+  <style>
     /* Snowflake container */
     #snowContainer {
       position: fixed;
@@ -58,8 +58,6 @@
       --accent-soft: rgba(14, 165, 233, 0.08);
       --danger: #b91c1c;
       --status: #4f46e5;
-      
-      /* FIX: Changed top bar to white for light mode */
       --topbar-bg: #ffffff; 
     }
 
@@ -122,7 +120,6 @@
       display: grid;
       grid-template-columns: 1.1fr 1fr;
       gap: 1.75rem;
-      /* FIX: This forces both cards to start at the exact same top pixel */
       align-items: start; 
       align-content: start;
     }
@@ -387,30 +384,24 @@
       }
 
       .main-grid {
-        /* Force 2 columns */
         grid-template-columns: 1fr 1fr; 
         gap: 2rem;
-        /* Force Top Alignment */
         align-items: start; 
         align-content: start;
       }
 
-      /* Show the expand button ONLY on desktop */
       .expand-btn {
         display: block; 
       }
 
-      /* THE FOCUS MODE STATE (Desktop Only) */
       .card.expanded {
         position: fixed;
         top: 5vh; 
         left: 50%; 
         transform: translateX(-50%); 
-        
         width: 90vw; 
         max-width: 1600px;
         height: 90vh;
-        
         z-index: 10000;
         margin: 0;
         overflow-y: auto;
@@ -513,6 +504,12 @@
     query,
     orderBy
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged 
+  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
   // ===== THEME HANDLING =====
   const THEME_KEY = "faq_theme_preference";
@@ -568,18 +565,17 @@
   };
 
   let db;
+  let auth;
   let faqsCol;
   let faqItems = [];
-  let editingId = null;             // which FAQ is being edited (if any)
-  let isAdmin = false;              // admin mode flag
-  let lastApprovedQuestion = null;  // hysteresis for dupe warning
-
-  // CHANGE THIS PASSWORD TO WHATEVER YOU LIKE
-  const ADMIN_PASSWORD = "changeme";
+  let editingId = null;             
+  let isAdmin = false;             
+  let lastApprovedQuestion = null; 
 
   try {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
+    auth = getAuth(app);
     faqsCol = collection(db, "faqs");
     setStatus("Firebase initialised. Loading FAQs…");
   } catch (e) {
@@ -606,7 +602,6 @@
 
   function startSnow() {
     if (snowContainer) return;
-
     snowContainer = document.createElement("div");
     snowContainer.id = "snowContainer";
     document.body.appendChild(snowContainer);
@@ -615,14 +610,11 @@
       const flake = document.createElement("div");
       flake.className = "snowflake";
       flake.textContent = "❄";
-
       const size = Math.random() * 1.2 + 0.4;
       flake.style.fontSize = size + "rem";
       flake.style.left = Math.random() * 100 + "vw";
       flake.style.animationDuration = 4 + Math.random() * 6 + "s";
-
       snowContainer.appendChild(flake);
-
       setTimeout(() => flake.remove(), 12000);
     }, 200);
   }
@@ -630,14 +622,12 @@
   function stopSnow() {
     if (snowContainer) snowContainer.remove();
     snowContainer = null;
-
     if (snowInterval) clearInterval(snowInterval);
     snowInterval = null;
   }
 
   xmasToggle.addEventListener("click", () => {
     xmasEnabled = !xmasEnabled;
-
     if (xmasEnabled) {
       startSnow();
       xmasToggle.textContent = "🎄";
@@ -647,70 +637,10 @@
     }
   });
 
- // ===== SECURE ADMIN HANDLING (USERNAME VERSION) =====
-  
-  // 1. Listen for login/logout state changes automatically
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      isAdmin = true;
-      // Extract just the username part (remove @bmslogger.local)
-      const username = user.email.split('@')[0]; 
-      setStatus(`Logged in as ${username}`);
-      adminToggleBtn.textContent = "Log out (admin)";
-    } else {
-      isAdmin = false;
-      editingId = null;
-      faqForm.reset();
-      formHint.textContent = "";
-      adminToggleBtn.textContent = "Admin login";
-      // Don't clutter status if just loading
-      if(faqItems.length > 0) setStatus("Admin mode disabled.");
-    }
-    renderList(); // Re-render to show/hide Edit/Delete buttons
-  });
-
-  // 2. Button Logic
-  adminToggleBtn.addEventListener("click", () => {
-    if (!isAdmin) {
-      // Prompt for Username instead of Email
-      const username = window.prompt("Admin Username:");
-      if (!username) return;
-      
-      const pw = window.prompt("Admin Password:");
-      if (!pw) return;
-
-      // AUTOMATICALLY ADD THE FAKE DOMAIN
-      const fakeEmail = username + "@bmslogger.local";
-
-      setStatus("Logging in...");
-      signInWithEmailAndPassword(auth, fakeEmail, pw)
-        .then(() => {
-          // Success is handled by onAuthStateChanged above
-        })
-        .catch((error) => {
-          // If error, check if it's user-not-found to give a better message
-          if(error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found') {
-             window.alert("Login failed: Username not found.");
-          } else {
-             window.alert("Login failed: " + error.message);
-          }
-          setStatus("Login failed.");
-        });
-    } else {
-      // Log out
-      signOut(auth).then(() => {
-        setStatus("Logged out.");
-      });
-    }
-  });
-  
   // ===== SECURE ADMIN HANDLING (USERNAME VERSION) =====
-  
-  // 1. Listen for login/logout state changes automatically
   onAuthStateChanged(auth, (user) => {
     if (user) {
       isAdmin = true;
-      // Extract just the username part (remove @bmslogger.local)
       const username = user.email.split('@')[0]; 
       setStatus(`Logged in as ${username}`);
       adminToggleBtn.textContent = "Log out (admin)";
@@ -720,32 +650,27 @@
       faqForm.reset();
       formHint.textContent = "";
       adminToggleBtn.textContent = "Admin login";
-      // Don't clutter status if just loading
       if(faqItems.length > 0) setStatus("Admin mode disabled.");
     }
-    renderList(); // Re-render to show/hide Edit/Delete buttons
+    renderList();
   });
 
-  // 2. Button Logic
   adminToggleBtn.addEventListener("click", () => {
     if (!isAdmin) {
-      // Prompt for Username instead of Email
       const username = window.prompt("Admin Username:");
       if (!username) return;
       
       const pw = window.prompt("Admin Password:");
       if (!pw) return;
 
-      // AUTOMATICALLY ADD THE FAKE DOMAIN
       const fakeEmail = username + "@bmslogger.local";
 
       setStatus("Logging in...");
       signInWithEmailAndPassword(auth, fakeEmail, pw)
         .then(() => {
-          // Success is handled by onAuthStateChanged above
+          // Success handled by onAuthStateChanged
         })
         .catch((error) => {
-          // If error, check if it's user-not-found to give a better message
           if(error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found') {
              window.alert("Login failed: Username not found.");
           } else {
@@ -754,7 +679,6 @@
           setStatus("Login failed.");
         });
     } else {
-      // Log out
       signOut(auth).then(() => {
         setStatus("Logged out.");
       });
@@ -843,8 +767,8 @@
         vid.className = "faq-video";
 
         let href = item.video.trim();
-        if (href && !/^https?:\/\//i.test(href)) {
-          href = "https://" + href;
+        if (!/^https?:\/\//i.test(href)) {
+          href = "https://" + href.replace(/javascript:/gi, "");
         }
 
         const label = document.createElement("span");
@@ -889,7 +813,6 @@
       logBtn.addEventListener("click", () => incrementCount(item.id));
       actions.appendChild(logBtn);
 
-      // Copy answer button with feedback
       const copyBtn = document.createElement("button");
       copyBtn.type = "button";
       copyBtn.className = "secondary";
@@ -897,12 +820,10 @@
 
       copyBtn.addEventListener("click", () => {
         const originalText = copyBtn.textContent;
-
         navigator.clipboard.writeText(item.answer || "").then(() => {
           copyBtn.textContent = "Copied";
           copyBtn.style.opacity = "0.6";
           setStatus("Answer copied.");
-
           setTimeout(() => {
             copyBtn.textContent = originalText;
             copyBtn.style.opacity = "1";
@@ -936,7 +857,6 @@
       }
 
       wrap.appendChild(actions);
-
       faqList.appendChild(wrap);
     });
   }
@@ -975,16 +895,20 @@
     if (!item) return;
     const newCount = (item.count || 0) + 1;
     item.count = newCount;
+    renderList();
+
     try {
       await updateDoc(doc(faqsCol, id), { count: newCount });
-      renderList();
       setStatus("Logged occurrence.");
     } catch (e) {
+      item.count = newCount - 1;
+      renderList();
       showError("Failed to log occurrence: " + e.message);
     }
   }
 
   async function deleteFAQ(id, question) {
+    if(!isAdmin) return;
     const confirmed = window.confirm(
       `Delete this FAQ?\n\n"${question}"\n\nThis cannot be undone.`
     );
@@ -1038,7 +962,6 @@
       .map(t => t.trim())
       .filter(Boolean);
 
-    // Require at least one tag
     if (tags.length === 0) {
       showError("Please add at least one tag before saving.");
       setStatus("Save cancelled.");
@@ -1046,7 +969,6 @@
       return;
     }
 
-    // Only admin can edit existing FAQs
     if (editingId && !isAdmin) {
       window.alert("Only admin can edit existing FAQs.");
       return;
@@ -1054,7 +976,6 @@
 
     const questionNorm = normaliseText(question);
 
-    // Only run dupe warning if this question text hasn't already been approved
     if (questionNorm !== lastApprovedQuestion) {
       const softThreshold = 0.6;
       const hardThreshold = 0.85;
@@ -1078,7 +999,6 @@
           setStatus("Save cancelled due to possible duplicate.");
           return;
         }
-
         lastApprovedQuestion = questionNorm;
       }
     }
@@ -1162,27 +1082,20 @@
 
   loadFAQs();
 
-// Toggle Focus Mode
   window.toggleExpand = function(cardId, btn) {
     const card = document.getElementById(cardId);
-    
-    // Toggle the class
     card.classList.toggle("expanded");
-    
-    // Check if it is NOW expanded or not to swap the icon
     const isExpanded = card.classList.contains("expanded");
-    
     if (isExpanded) {
-      btn.textContent = "✕"; // Change to Close icon
+      btn.textContent = "✕"; 
       btn.title = "Close focus mode";
-      document.body.style.overflow = "hidden"; // Stop background page scrolling
+      document.body.style.overflow = "hidden"; 
     } else {
-      btn.textContent = "⤢"; // Change back to Expand icon
+      btn.textContent = "⤢"; 
       btn.title = "Expand to focus";
-      document.body.style.overflow = ""; // Re-enable page scrolling
+      document.body.style.overflow = ""; 
     }
   };
-  
 </script>
 
 </body>

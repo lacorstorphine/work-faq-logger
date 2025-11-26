@@ -48,19 +48,18 @@
       --topbar-bg: #020617;
     }
 
-html[data-theme="light"] {
-  --bg: #f3f4f6;
-  --card-bg: #ffffff;
-  --border: #d1d5db;
-  --text: #111827;
-  --muted: #6b7280;
-  --accent: #0ea5e9;
-  --accent-soft: rgba(14, 165, 233, 0.08);
-  --danger: #b91c1c;
-  --status: #4f46e5;
-  --topbar-bg: #ffffff; /* or just same as card-bg */
-}
-
+    html[data-theme="light"] {
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --border: #d1d5db;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #0ea5e9;
+      --accent-soft: rgba(14, 165, 233, 0.08);
+      --danger: #b91c1c;
+      --status: #4f46e5;
+      --topbar-bg: #ffffff; 
+    }
 
     html {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -81,18 +80,6 @@ html[data-theme="light"] {
       padding: 1.5rem;
       box-sizing: border-box;
     }
-
-    /* DESKTOP-ONLY WIDER LAYOUT */
-@media (min-width: 1200px) {
-  .app {
-    max-width: 1600px;   /* wider screen fill on desktop */
-  }
-
-  .main-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
-}
 
     .top-bar {
       background: var(--topbar-bg);
@@ -133,7 +120,8 @@ html[data-theme="light"] {
       display: grid;
       grid-template-columns: 1.1fr 1fr;
       gap: 1.75rem;
-      align-items: flex-start;
+      align-items: start; 
+      align-content: start;
     }
 
     .card {
@@ -142,6 +130,8 @@ html[data-theme="light"] {
       padding: 1.25rem 1.5rem;
       border: 1px solid var(--border);
       box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+      position: relative; 
+      transition: all 0.3s ease-in-out; 
     }
 
     .card-title {
@@ -157,6 +147,7 @@ html[data-theme="light"] {
     }
 
     input[type="text"],
+    input[type="password"], 
     textarea {
       width: 100%;
       padding: 0.5rem 0.6rem;
@@ -223,13 +214,12 @@ html[data-theme="light"] {
       margin-top: 1rem;
     }
 
-.faq-item {
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  padding: 0.75rem 0.9rem;
-  background: var(--card-bg);
-}
-
+    .faq-item {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 0.75rem 0.9rem;
+      background: var(--card-bg);
+    }
 
     .faq-header {
       display: flex;
@@ -283,21 +273,13 @@ html[data-theme="light"] {
       gap: 0.25rem;
     }
 
-   .tag-pill {
-  font-size: 0.75rem;
-  padding: 0.15rem 0.55rem;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--muted);
-  cursor: pointer;
-  transition: background 0.1s ease, transform 0.05s ease, opacity 0.1s ease;
-}
-
-.tag-pill:hover {
-  opacity: 0.9;
-  transform: translateY(1px);
-}
-
+    .tag-pill {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--muted);
+    }
 
     .tag-pill--muted {
       opacity: 0.8;
@@ -339,40 +321,111 @@ html[data-theme="light"] {
       top: 1.5rem;
     }
 
-    @media (max-width: 768px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .archive-card {
-        position: static;
-      }
+    /* LOGIN MODAL (DIALOG) STYLES */
+    dialog {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(2px);
     }
 
-    @media (max-width: 640px) {
-      .card {
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-      }
+    /* Expand button - Hidden by default (Mobile) */
+    .expand-btn {
+      display: none; 
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+      z-index: 10;
+      padding: 5px;
+    }
 
-      h1 {
-        font-size: 1.2rem;
-      }
-
-      .top-bar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .top-right {
-        justify-content: flex-start;
-      }
+    .expand-btn:hover {
+      color: var(--accent);
+      transform: scale(1.1);
     }
 
     input:focus,
     textarea:focus {
       outline: 2px solid var(--accent);
       outline-offset: 2px;
+    }
+
+    /* MEDIA QUERIES */
+
+    /* Tablet/Mobile Stack */
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .archive-card {
+        position: static;
+      }
+    }
+
+    /* Small Mobile */
+    @media (max-width: 640px) {
+      .card {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      h1 {
+        font-size: 1.2rem;
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .top-right {
+        justify-content: flex-start;
+      }
+    }
+
+    /* DESKTOP-ONLY LAYOUT & LOGIC (Must be at the bottom) */
+    @media (min-width: 1200px) {
+      .app {
+        max-width: 1600px;
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr 1fr; 
+        gap: 2rem;
+        align-items: start; 
+        align-content: start;
+      }
+
+      .expand-btn {
+        display: block; 
+      }
+
+      .card.expanded {
+        position: fixed;
+        top: 5vh; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        width: 90vw; 
+        max-width: 1600px;
+        height: 90vh;
+        z-index: 10000;
+        margin: 0;
+        overflow-y: auto;
+        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.85);
+        border-color: var(--accent);
+      }
     }
   </style>
 </head>
@@ -399,8 +452,13 @@ html[data-theme="light"] {
   </header>
 
   <div class="main-grid">
-    <!-- LEFT: ADD / EDIT FAQ -->
-    <div class="card">
+    
+    <div class="card" id="cardLeft">
+      
+      <button type="button" class="expand-btn" onclick="toggleExpand('cardLeft', this)">
+        ⤢
+      </button>
+
       <h2 class="card-title">Add / Edit FAQ</h2>
 
       <form id="faqForm">
@@ -427,8 +485,12 @@ html[data-theme="light"] {
       </form>
     </div>
 
-    <!-- RIGHT: SEARCH / ARCHIVE -->
-    <div class="card archive-card">
+    <div class="card archive-card" id="cardRight">
+      
+      <button type="button" class="expand-btn" onclick="toggleExpand('cardRight', this)">
+        ⤢
+      </button>
+
       <h2 class="card-title">Search FAQs</h2>
 
       <label for="searchInput" style="margin-bottom:.35rem;">Search</label>
@@ -447,6 +509,22 @@ html[data-theme="light"] {
 
 </div>
 
+<dialog id="loginDialog">
+  <h2 class="card-title" style="margin-top:0;">Admin Login</h2>
+  <form id="loginForm" method="dialog">
+    <label for="adminUsername">Username</label>
+    <input type="text" id="adminUsername" required style="margin-bottom: 1rem;" />
+    
+    <label for="adminPassword">Password</label>
+    <input type="password" id="adminPassword" required style="margin-bottom: 1.5rem;" />
+    
+    <div class="row" style="justify-content: flex-end;">
+      <button type="button" class="secondary" id="cancelLoginBtn">Cancel</button>
+      <button type="submit">Log in</button>
+    </div>
+  </form>
+</dialog>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
   import {
@@ -460,6 +538,12 @@ html[data-theme="light"] {
     query,
     orderBy
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged 
+  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
   // ===== THEME HANDLING =====
   const THEME_KEY = "faq_theme_preference";
@@ -515,18 +599,17 @@ html[data-theme="light"] {
   };
 
   let db;
+  let auth;
   let faqsCol;
   let faqItems = [];
-  let editingId = null;             // which FAQ is being edited (if any)
-  let isAdmin = false;              // admin mode flag
-  let lastApprovedQuestion = null;  // hysteresis for dupe warning
-
-  // CHANGE THIS PASSWORD TO WHATEVER YOU LIKE
-  const ADMIN_PASSWORD = "changeme";
+  let editingId = null;             
+  let isAdmin = false;             
+  let lastApprovedQuestion = null; 
 
   try {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
+    auth = getAuth(app);
     faqsCol = collection(db, "faqs");
     setStatus("Firebase initialised. Loading FAQs…");
   } catch (e) {
@@ -546,6 +629,13 @@ html[data-theme="light"] {
   const adminToggleBtn = document.getElementById("adminToggle");
   const xmasToggle = document.getElementById("xmasToggle");
 
+  // LOGIN MODAL ELEMENTS
+  const loginDialog = document.getElementById("loginDialog");
+  const loginForm = document.getElementById("loginForm");
+  const adminUsernameInput = document.getElementById("adminUsername");
+  const adminPasswordInput = document.getElementById("adminPassword");
+  const cancelLoginBtn = document.getElementById("cancelLoginBtn");
+
   // ===== CHRISTMAS MODE =====
   let xmasEnabled = false;
   let snowContainer = null;
@@ -553,7 +643,6 @@ html[data-theme="light"] {
 
   function startSnow() {
     if (snowContainer) return;
-
     snowContainer = document.createElement("div");
     snowContainer.id = "snowContainer";
     document.body.appendChild(snowContainer);
@@ -562,14 +651,11 @@ html[data-theme="light"] {
       const flake = document.createElement("div");
       flake.className = "snowflake";
       flake.textContent = "❄";
-
       const size = Math.random() * 1.2 + 0.4;
       flake.style.fontSize = size + "rem";
       flake.style.left = Math.random() * 100 + "vw";
       flake.style.animationDuration = 4 + Math.random() * 6 + "s";
-
       snowContainer.appendChild(flake);
-
       setTimeout(() => flake.remove(), 12000);
     }, 200);
   }
@@ -577,14 +663,12 @@ html[data-theme="light"] {
   function stopSnow() {
     if (snowContainer) snowContainer.remove();
     snowContainer = null;
-
     if (snowInterval) clearInterval(snowInterval);
     snowInterval = null;
   }
 
   xmasToggle.addEventListener("click", () => {
     xmasEnabled = !xmasEnabled;
-
     if (xmasEnabled) {
       startSnow();
       xmasToggle.textContent = "🎄";
@@ -594,31 +678,68 @@ html[data-theme="light"] {
     }
   });
 
-  // ===== ADMIN HANDLING =====
-  function updateAdminUI() {
-    adminToggleBtn.textContent = isAdmin ? "Log out (admin)" : "Admin login";
-    setStatus(isAdmin ? "Admin mode enabled." : "Admin mode disabled.");
-    renderList();
-  }
-
-  adminToggleBtn.addEventListener("click", () => {
-    if (!isAdmin) {
-      const pw = window.prompt("Enter admin password:");
-      if (pw === ADMIN_PASSWORD) {
-        isAdmin = true;
-        updateAdminUI();
-      } else if (pw !== null) {
-        window.alert("Incorrect password.");
-      }
+  // ===== SECURE ADMIN HANDLING (MODAL VERSION) =====
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isAdmin = true;
+      const username = user.email.split('@')[0]; 
+      setStatus(`Logged in as ${username}`);
+      adminToggleBtn.textContent = "Log out (admin)";
     } else {
       isAdmin = false;
       editingId = null;
       faqForm.reset();
       formHint.textContent = "";
-      lastApprovedQuestion = null;
-      updateAdminUI();
+      adminToggleBtn.textContent = "Admin login";
+      if(faqItems.length > 0) setStatus("Admin mode disabled.");
+    }
+    renderList();
+  });
+
+  // Open Modal
+  adminToggleBtn.addEventListener("click", () => {
+    if (!isAdmin) {
+      loginDialog.showModal();
+      adminUsernameInput.focus();
+    } else {
+      signOut(auth).then(() => {
+        setStatus("Logged out.");
+      });
     }
   });
+
+  // Close Modal
+  cancelLoginBtn.addEventListener("click", () => {
+    loginDialog.close();
+  });
+
+  // Handle Login Submit
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault(); // Stop page reload
+
+    const username = adminUsernameInput.value.trim();
+    const pw = adminPasswordInput.value;
+    const fakeEmail = username + "@bmslogger.local";
+
+    setStatus("Logging in...");
+    
+    signInWithEmailAndPassword(auth, fakeEmail, pw)
+      .then(() => {
+        loginDialog.close();
+        loginForm.reset(); // Clear inputs for security
+      })
+      .catch((error) => {
+        if(error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found') {
+            window.alert("Login failed: Username not found.");
+        } else if (error.code === 'auth/wrong-password') {
+            window.alert("Login failed: Incorrect password.");
+        } else {
+            window.alert("Login failed: " + error.message);
+        }
+        setStatus("Login failed.");
+      });
+  });
+
 
   // ===== DUPLICATE CHECKING =====
   function normaliseText(str) {
@@ -702,8 +823,8 @@ html[data-theme="light"] {
         vid.className = "faq-video";
 
         let href = item.video.trim();
-        if (href && !/^https?:\/\//i.test(href)) {
-          href = "https://" + href;
+        if (!/^https?:\/\//i.test(href)) {
+          href = "https://" + href.replace(/javascript:/gi, "");
         }
 
         const label = document.createElement("span");
@@ -723,28 +844,19 @@ html[data-theme="light"] {
       const tags = document.createElement("div");
       tags.className = "faq-tags";
 
-if (item.tags.length) {
-  item.tags.forEach(t => {
-    const pill = document.createElement("span");
-    pill.className = "tag-pill";
-    pill.textContent = t;
-
-    // Make tag clickable: set search box to this tag and re-filter
-    pill.addEventListener("click", () => {
-      searchInput.value = t;
-      renderList();
-      setStatus(`Filtered by tag: ${t}`);
-    });
-
-    tags.appendChild(pill);
-  });
-} else {
-  const pill = document.createElement("span");
-  pill.className = "tag-pill tag-pill--muted";
-  pill.textContent = "untagged";
-  tags.appendChild(pill);
-}
-
+      if (item.tags.length) {
+        item.tags.forEach(t => {
+          const pill = document.createElement("span");
+          pill.className = "tag-pill";
+          pill.textContent = t;
+          tags.appendChild(pill);
+        });
+      } else {
+        const pill = document.createElement("span");
+        pill.className = "tag-pill tag-pill--muted";
+        pill.textContent = "untagged";
+        tags.appendChild(pill);
+      }
 
       wrap.appendChild(tags);
 
@@ -757,7 +869,6 @@ if (item.tags.length) {
       logBtn.addEventListener("click", () => incrementCount(item.id));
       actions.appendChild(logBtn);
 
-      // Copy answer button with feedback
       const copyBtn = document.createElement("button");
       copyBtn.type = "button";
       copyBtn.className = "secondary";
@@ -765,12 +876,10 @@ if (item.tags.length) {
 
       copyBtn.addEventListener("click", () => {
         const originalText = copyBtn.textContent;
-
         navigator.clipboard.writeText(item.answer || "").then(() => {
           copyBtn.textContent = "Copied";
           copyBtn.style.opacity = "0.6";
           setStatus("Answer copied.");
-
           setTimeout(() => {
             copyBtn.textContent = originalText;
             copyBtn.style.opacity = "1";
@@ -804,7 +913,6 @@ if (item.tags.length) {
       }
 
       wrap.appendChild(actions);
-
       faqList.appendChild(wrap);
     });
   }
@@ -843,16 +951,20 @@ if (item.tags.length) {
     if (!item) return;
     const newCount = (item.count || 0) + 1;
     item.count = newCount;
+    renderList();
+
     try {
       await updateDoc(doc(faqsCol, id), { count: newCount });
-      renderList();
       setStatus("Logged occurrence.");
     } catch (e) {
+      item.count = newCount - 1;
+      renderList();
       showError("Failed to log occurrence: " + e.message);
     }
   }
 
   async function deleteFAQ(id, question) {
+    if(!isAdmin) return;
     const confirmed = window.confirm(
       `Delete this FAQ?\n\n"${question}"\n\nThis cannot be undone.`
     );
@@ -906,7 +1018,6 @@ if (item.tags.length) {
       .map(t => t.trim())
       .filter(Boolean);
 
-    // Require at least one tag
     if (tags.length === 0) {
       showError("Please add at least one tag before saving.");
       setStatus("Save cancelled.");
@@ -914,7 +1025,6 @@ if (item.tags.length) {
       return;
     }
 
-    // Only admin can edit existing FAQs
     if (editingId && !isAdmin) {
       window.alert("Only admin can edit existing FAQs.");
       return;
@@ -922,7 +1032,6 @@ if (item.tags.length) {
 
     const questionNorm = normaliseText(question);
 
-    // Only run dupe warning if this question text hasn't already been approved
     if (questionNorm !== lastApprovedQuestion) {
       const softThreshold = 0.6;
       const hardThreshold = 0.85;
@@ -946,7 +1055,6 @@ if (item.tags.length) {
           setStatus("Save cancelled due to possible duplicate.");
           return;
         }
-
         lastApprovedQuestion = questionNorm;
       }
     }
@@ -1029,6 +1137,21 @@ if (item.tags.length) {
   });
 
   loadFAQs();
+
+  window.toggleExpand = function(cardId, btn) {
+    const card = document.getElementById(cardId);
+    card.classList.toggle("expanded");
+    const isExpanded = card.classList.contains("expanded");
+    if (isExpanded) {
+      btn.textContent = "✕"; 
+      btn.title = "Close focus mode";
+      document.body.style.overflow = "hidden"; 
+    } else {
+      btn.textContent = "⤢"; 
+      btn.title = "Expand to focus";
+      document.body.style.overflow = ""; 
+    }
+  };
 </script>
 
 </body>

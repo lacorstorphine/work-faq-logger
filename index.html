@@ -273,14 +273,22 @@
       gap: 0.25rem;
     }
 
-    .tag-pill {
+  .tag-pill {
       font-size: 0.75rem;
       padding: 0.15rem 0.55rem;
       border-radius: 999px;
       background: var(--accent-soft);
       color: var(--muted);
+      cursor: pointer; /* Add this: shows the hand icon */
+      transition: all 0.2s ease; /* Add this: smooth animation */
     }
 
+    /* Add this new block for hover effect */
+    .tag-pill:hover {
+      background: var(--accent);
+      color: #020617;
+    }
+    
     .tag-pill--muted {
       opacity: 0.8;
     }
@@ -844,11 +852,22 @@
       const tags = document.createElement("div");
       tags.className = "faq-tags";
 
-      if (item.tags.length) {
+  if (item.tags.length) {
         item.tags.forEach(t => {
           const pill = document.createElement("span");
           pill.className = "tag-pill";
           pill.textContent = t;
+          
+          // --- FIX STARTS HERE ---
+          // Make the tag clickable
+          pill.addEventListener("click", (e) => {
+            e.stopPropagation(); // Prevents clicking the tag from doing anything else unwanted
+            searchInput.value = t; // Put tag text in search box
+            renderList(); // Run the search
+            setStatus(`Filtered by tag: ${t}`);
+          });
+          // --- FIX ENDS HERE ---
+
           tags.appendChild(pill);
         });
       } else {

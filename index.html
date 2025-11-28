@@ -839,17 +839,18 @@ const sortSelect = document.getElementById("sortSelect");
 function renderList() {
     const q = searchInput.value.toLowerCase().trim();
     
+    // --- SETTING: The Hybrid "Hard Floor" ---
+    // A question must have at least this many logs to ever be considered "Hot"
+    const MIN_HOT_VOTES = 3; 
+
     // 1. GET SORT SETTING
     const sortEl = document.getElementById("sortSelect");
     const sortType = sortEl ? sortEl.value : "newest"; 
 
     faqList.innerHTML = "";
 
-    // --- UPDATED SECTION START ---
-    // 2. CALCULATE HOT THRESHOLD
-    // Instead of picking specific IDs, we find the count of the 5th highest item.
-    let hotThreshold = 999999; // Default to impossible number
-
+    // 2. CALCULATE HOT THRESHOLD (Relative Top 5)
+    let hotThreshold = 999999; 
     const sortedByCount = [...faqItems].sort((a, b) => (b.count || 0) - (a.count || 0));
     
     if (sortedByCount.length > 0) {
@@ -857,11 +858,10 @@ function renderList() {
       const cutoffIndex = Math.min(sortedByCount.length - 1, 4);
       hotThreshold = sortedByCount[cutoffIndex].count;
     }
-    // --- UPDATED SECTION END ---
 
     let items = faqItems;
 
-    // 3. FILTER (Search)
+    // 3. FILTER
     if (q) {
       items = items.filter(item => {
         const text = (item.question + " " + item.answer + " " + (item.video || "") + " " + item.tags.join(" ")).toLowerCase();
@@ -903,15 +903,16 @@ function renderList() {
       badgeContainer.style.display = "flex";
       badgeContainer.style.gap = "0.5rem";
 
-      // --- UPDATED LOGIC START ---
-      // If the item has more than 0 counts AND meets the threshold of the top 5
-      if (item.count > 0 && item.count >= hotThreshold) {
+      // --- HYBRID LOGIC START ---
+      // 1. Must satisfy the relative Top 5 threshold
+      // 2. Must satisfy the absolute Minimum Floor (MIN_HOT_VOTES)
+      if (item.count >= hotThreshold && item.count >= MIN_HOT_VOTES) {
         const hotBadge = document.createElement("div");
         hotBadge.className = "badge hot-badge";
         hotBadge.textContent = "🔥 Hot";
         badgeContainer.appendChild(hotBadge);
       }
-      // --- UPDATED LOGIC END ---
+      // --- HYBRID LOGIC END ---
 
       const countBadge = document.createElement("div");
       countBadge.className = "badge";

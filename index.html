@@ -159,6 +159,30 @@
       box-sizing: border-box;
     }
 
+    /* Add this to style the new Sort Dropdown */
+    select {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.6rem;
+      border-radius: 0.5rem;
+      font: inherit;
+      cursor: pointer;
+      min-height: 38px;
+    }
+
+    select:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Style for the Hot Badge */
+    .hot-badge {
+      border-color: #f97316 !important;
+      color: #f97316 !important;
+      background: rgba(249, 115, 22, 0.15) !important;
+    }
+
     textarea {
       resize: vertical;
       min-height: 80px;
@@ -507,9 +531,18 @@
         type="text"
         placeholder="Search questions, answers, or tags…"
       />
-      <button type="button" class="secondary" id="clearSearchButton" style="margin-top:.6rem;">
-        Clear search
-      </button>
+      
+   <div class="row" style="align-items: center; justify-content: space-between; margin-top: 0.6rem;">
+  <select id="sortSelect">
+    <option value="newest">📅 Newest first</option>
+    <option value="popular">🔥 Most logged</option>
+    <option value="alpha">🔤 A-Z</option>
+  </select>
+
+  <button type="button" class="secondary" id="clearSearchButton" style="margin-top:0;">
+    Clear search
+  </button>
+</div>
 
       <div class="faq-list" id="faqList"></div>
     </div>
@@ -632,6 +665,14 @@
   const clearFormButton = document.getElementById("clearFormButton");
   const searchInput = document.getElementById("searchInput");
   const clearSearchButton = document.getElementById("clearSearchButton");
+
+const sortSelect = document.getElementById("sortSelect");
+
+  sortSelect.addEventListener("change", () => {
+    renderList();
+    setStatus("List sorted.");
+  });
+  
   const faqList = document.getElementById("faqList");
   const formHint = document.getElementById("formHint");
   const adminToggleBtn = document.getElementById("adminToggle");
@@ -781,19 +822,41 @@
     return matches;
   }
 
-  // ===== RENDERING =====
-  function renderList() {
+function renderList() {
     const q = searchInput.value.toLowerCase().trim();
+    
+    // 1. GET SORT SETTING
+    const sortEl = document.getElementById("sortSelect");
+    const sortType = sortEl ? sortEl.value : "newest"; 
+
     faqList.innerHTML = "";
 
+    // 2. CALCULATE TOP 5 (For the 🔥 Badge)
+    const top5Ids = [...faqItems]
+      .sort((a, b) => (b.count || 0) - (a.count || 0))
+      .slice(0, 5)
+      .map(item => item.id);
+
     let items = faqItems;
+
+    // 3. FILTER (Search)
     if (q) {
       items = items.filter(item => {
-        const text = (item.question + " " + item.answer + " " + (item.video || "") + " " + item.tags.join(" "))
-          .toLowerCase();
+        const text = (item.question + " " + item.answer + " " + (item.video || "") + " " + item.tags.join(" ")).toLowerCase();
         return text.includes(q);
       });
     }
+
+    // 4. SORT (The new logic)
+    items.sort((a, b) => {
+      if (sortType === "popular") {
+        return (b.count || 0) - (a.count || 0); // High to Low
+      } else if (sortType === "alpha") {
+        return a.question.localeCompare(b.question); // A-Z
+      } else {
+        return (b.createdAt || 0) - (a.createdAt || 0); // Newest
+      }
+    });
 
     if (!items.length) {
       const p = document.createElement("p");
@@ -813,37 +876,47 @@
       const title = document.createElement("strong");
       title.textContent = item.question;
 
-      const badge = document.createElement("div");
-      badge.className = "badge";
-      badge.textContent = (item.count || 0) + " times";
+      // BADGES
+      const badgeContainer = document.createElement("div");
+      badgeContainer.style.display = "flex";
+      badgeContainer.style.gap = "0.5rem";
+
+      // Hot Badge Logic
+      if (item.count > 0 && top5Ids.includes(item.id)) {
+        const hotBadge = document.createElement("div");
+        hotBadge.className = "badge hot-badge";
+        hotBadge.textContent = "🔥 Hot";
+        badgeContainer.appendChild(hotBadge);
+      }
+
+      const countBadge = document.createElement("div");
+      countBadge.className = "badge";
+      countBadge.textContent = (item.count || 0) + " times";
+      badgeContainer.appendChild(countBadge);
+
+      header.appendChild(title);
+      header.appendChild(badgeContainer);
+      wrap.appendChild(header);
 
       const answer = document.createElement("div");
       answer.className = "faq-answer";
       answer.textContent = item.answer || "No answer saved yet.";
-
-      header.appendChild(title);
-      header.appendChild(badge);
-      wrap.appendChild(header);
       wrap.appendChild(answer);
 
       if (item.video) {
         const vid = document.createElement("div");
         vid.className = "faq-video";
-
         let href = item.video.trim();
         if (!/^https?:\/\//i.test(href)) {
           href = "https://" + href.replace(/javascript:/gi, "");
         }
-
         const label = document.createElement("span");
         label.textContent = "Video: ";
-
         const link = document.createElement("a");
         link.href = href;
         link.target = "_blank";
         link.rel = "noopener";
         link.textContent = item.video;
-
         vid.appendChild(label);
         vid.appendChild(link);
         wrap.appendChild(vid);
@@ -851,23 +924,20 @@
 
       const tags = document.createElement("div");
       tags.className = "faq-tags";
-
-  if (item.tags.length) {
+      if (item.tags.length) {
         item.tags.forEach(t => {
           const pill = document.createElement("span");
           pill.className = "tag-pill";
           pill.textContent = t;
           
-          // --- FIX STARTS HERE ---
-          // Make the tag clickable
+          // Clickable Tag Logic
           pill.addEventListener("click", (e) => {
-            e.stopPropagation(); // Prevents clicking the tag from doing anything else unwanted
-            searchInput.value = t; // Put tag text in search box
-            renderList(); // Run the search
-            setStatus(`Filtered by tag: ${t}`);
+             e.stopPropagation();
+             searchInput.value = t;
+             renderList();
+             setStatus(`Filtered by tag: ${t}`);
           });
-          // --- FIX ENDS HERE ---
-
+          
           tags.appendChild(pill);
         });
       } else {
@@ -876,7 +946,6 @@
         pill.textContent = "untagged";
         tags.appendChild(pill);
       }
-
       wrap.appendChild(tags);
 
       const actions = document.createElement("div");
@@ -892,7 +961,6 @@
       copyBtn.type = "button";
       copyBtn.className = "secondary";
       copyBtn.textContent = "Copy";
-
       copyBtn.addEventListener("click", () => {
         const originalText = copyBtn.textContent;
         navigator.clipboard.writeText(item.answer || "").then(() => {
@@ -903,11 +971,8 @@
             copyBtn.textContent = originalText;
             copyBtn.style.opacity = "1";
           }, 1000);
-        }).catch(() => {
-          showError("Failed to copy to clipboard.");
-        });
+        }).catch(() => showError("Failed to copy."));
       });
-
       actions.appendChild(copyBtn);
 
       if (isAdmin) {
@@ -915,17 +980,13 @@
         editBtn.type = "button";
         editBtn.className = "secondary";
         editBtn.textContent = "Edit";
-        editBtn.addEventListener("click", () => {
-          loadForEdit(item.id);
-        });
-
+        editBtn.addEventListener("click", () => loadForEdit(item.id));
+        
         const deleteBtn = document.createElement("button");
         deleteBtn.type = "button";
         deleteBtn.className = "danger-btn";
         deleteBtn.textContent = "Delete";
-        deleteBtn.addEventListener("click", () => {
-          deleteFAQ(item.id, item.question);
-        });
+        deleteBtn.addEventListener("click", () => deleteFAQ(item.id, item.question));
 
         actions.appendChild(editBtn);
         actions.appendChild(deleteBtn);
@@ -935,7 +996,6 @@
       faqList.appendChild(wrap);
     });
   }
-
   // ===== DATA LOAD / UPDATE / DELETE =====
   async function loadFAQs() {
     if (!faqsCol) {

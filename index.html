@@ -120,7 +120,6 @@
       display: grid;
       grid-template-columns: 1.1fr 1fr;
       gap: 1.75rem;
-      align-items: start; 
       align-content: start;
     }
 
@@ -519,6 +518,28 @@ select {
         border-color: var(--accent);
       }
     }
+
+    /* --- EQUAL HEIGHT FIXES --- */
+    
+    /* Make the Left Card a Flex container so it can stretch contents */
+    #cardLeft {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Make the form fill the entire height of the card */
+    #faqForm {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1; 
+    }
+
+    /* Make the Answer text box grow to fill the empty space */
+    #answerInput {
+      flex-grow: 1;
+      min-height: 150px; /* Ensures it's never too small */
+    }
+    
   </style>
 </head>
 <body>

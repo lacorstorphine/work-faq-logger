@@ -176,16 +176,10 @@
       outline-offset: 2px;
     }
 
-/* Style for the Hot Badge */
-    .hot-badge {
+.hot-badge {
       border-color: #f97316 !important;
       color: #f97316 !important;
       background: rgba(249, 115, 22, 0.15) !important;
-      
-      /* New lines to force the "Pill" shape: */
-      padding-left: 0.75rem !important;
-      padding-right: 0.75rem !important;
-      white-space: nowrap; /* Stops it getting squashed */
     }
 
     textarea {
@@ -257,9 +251,10 @@
       align-items: baseline;
     }
 
-    .badge {
+.badge {
       display: inline-flex;
       align-items: center;
+      justify-content: center; /* Centers the text */
       gap: 0.25rem;
       padding: 0.15rem 0.55rem;
       border-radius: 999px;
@@ -267,6 +262,11 @@
       background: rgba(15, 23, 42, 0.14);
       font-size: 0.75rem;
       color: var(--muted);
+      
+      /* --- THE FIX --- */
+      min-width: 75px; /* Force a standard width */
+      height: 24px;    /* Force a standard height */
+      box-sizing: border-box;
     }
 
     html[data-theme="light"] .badge {

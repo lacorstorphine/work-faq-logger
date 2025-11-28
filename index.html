@@ -440,25 +440,26 @@ select {
       }
     }
 
-    /* FLOATING HELP BUTTON */
-.help-fab {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #020617;
-  font-size: 1.5rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-  z-index: 500;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+/* FLOATING HELP BUTTON */
+    .help-fab {
+      position: fixed;
+      bottom: 1.5rem;   /* Moved slightly closer to corner (was 2rem) */
+      right: 1.5rem;    /* Moved slightly closer to corner (was 2rem) */
+      width: 2.8rem;    /* Smaller size (was 3.5rem) */
+      height: 2.8rem;   /* Smaller size (was 3.5rem) */
+      border-radius: 50%;
+      background: var(--accent);
+      color: #020617;
+      font-size: 1.2rem; /* Smaller question mark (was 1.5rem) */
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 500;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer; /* Added this so it shows a hand cursor */
+    }
 
 .help-fab:hover {
   transform: scale(1.1) rotate(15deg);

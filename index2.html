@@ -120,7 +120,6 @@
       display: grid;
       grid-template-columns: 1.1fr 1fr;
       gap: 1.75rem;
-      align-items: start; 
       align-content: start;
     }
 
@@ -157,6 +156,38 @@
       color: var(--text);
       font: inherit;
       box-sizing: border-box;
+    }
+
+select {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      
+      /* --- MATCHING THE BUTTONS --- */
+      font-size: 0.8rem;             /* Matches button text size */
+      padding: 0.3rem 1.5rem 0.3rem 0.7rem; /* Matches button padding (extra right padding for arrow) */
+      border-radius: 999px;          /* Matches button "Pill" shape */
+      
+      font-family: inherit;
+      cursor: pointer;
+      appearance: none; /* Removes default ugly arrow to look cleaner */
+      
+      /* Add a custom arrow so it looks good with the pill shape */
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 0.5rem center;
+      background-size: 1em;
+    }
+
+    select:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    
+.hot-badge {
+      border-color: #f97316 !important;
+      color: #f97316 !important;
+      background: rgba(249, 115, 22, 0.15) !important;
     }
 
     textarea {
@@ -228,9 +259,10 @@
       align-items: baseline;
     }
 
-    .badge {
+.badge {
       display: inline-flex;
       align-items: center;
+      justify-content: center; /* Centers the text */
       gap: 0.25rem;
       padding: 0.15rem 0.55rem;
       border-radius: 999px;
@@ -238,6 +270,11 @@
       background: rgba(15, 23, 42, 0.14);
       font-size: 0.75rem;
       color: var(--muted);
+      
+      /* --- THE FIX --- */
+      min-width: 75px; /* Force a standard width */
+      height: 24px;    /* Force a standard height */
+      box-sizing: border-box;
     }
 
     html[data-theme="light"] .badge {
@@ -273,14 +310,22 @@
       gap: 0.25rem;
     }
 
-    .tag-pill {
+  .tag-pill {
       font-size: 0.75rem;
       padding: 0.15rem 0.55rem;
       border-radius: 999px;
       background: var(--accent-soft);
       color: var(--muted);
+      cursor: pointer; /* Add this: shows the hand icon */
+      transition: all 0.2s ease; /* Add this: smooth animation */
     }
 
+    /* Add this new block for hover effect */
+    .tag-pill:hover {
+      background: var(--accent);
+      color: #020617;
+    }
+    
     .tag-pill--muted {
       opacity: 0.8;
     }
@@ -395,6 +440,53 @@
       }
     }
 
+/* FLOATING HELP BUTTON */
+    .help-fab {
+      position: fixed;
+      bottom: 1.5rem;   /* Moved slightly closer to corner (was 2rem) */
+      right: 1.5rem;    /* Moved slightly closer to corner (was 2rem) */
+      width: 2.8rem;    /* Smaller size (was 3.5rem) */
+      height: 2.8rem;   /* Smaller size (was 3.5rem) */
+      border-radius: 50%;
+      background: var(--accent);
+      color: #020617;
+      font-size: 1.2rem; /* Smaller question mark (was 1.5rem) */
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 500;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer; /* Added this so it shows a hand cursor */
+    }
+
+.help-fab:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+/* Help Dialog Specifics */
+#helpDialog {
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+#helpDialog h3 {
+  margin-top: 1.5rem;
+  color: var(--accent);
+}
+
+#helpDialog ul {
+  padding-left: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+#helpDialog li {
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
     /* DESKTOP-ONLY LAYOUT & LOGIC (Must be at the bottom) */
     @media (min-width: 1200px) {
       .app {
@@ -404,7 +496,6 @@
       .main-grid {
         grid-template-columns: 1fr 1fr; 
         gap: 2rem;
-        align-items: start; 
         align-content: start;
       }
 
@@ -427,6 +518,28 @@
         border-color: var(--accent);
       }
     }
+
+    /* --- EQUAL HEIGHT FIXES --- */
+    
+    /* Make the Left Card a Flex container so it can stretch contents */
+    #cardLeft {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Make the form fill the entire height of the card */
+    #faqForm {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1; 
+    }
+
+    /* Make the Answer text box grow to fill the empty space */
+    #answerInput {
+      flex-grow: 1;
+      min-height: 150px; /* Ensures it's never too small */
+    }
+    
   </style>
 </head>
 <body>
@@ -435,7 +548,7 @@
 
   <header class="top-bar">
     <div class="top-left">
-      <h1>BROADCAST AND MEDIA SYSTEMS FAQ LOGGER 🪵</h1>
+      <h1>BROADCAST MEDIA SYSTEMS FAQ LOG FIRE 🪵🔥</h1>
       <p class="hint">Don’t enter names, IDs or other personal data. This is for general how-to steps only.</p>
     </div>
     <div class="top-right">
@@ -499,9 +612,18 @@
         type="text"
         placeholder="Search questions, answers, or tags…"
       />
-      <button type="button" class="secondary" id="clearSearchButton" style="margin-top:.6rem;">
-        Clear search
-      </button>
+      
+   <div class="row" style="align-items: center; justify-content: space-between; margin-top: 0.6rem;">
+  <select id="sortSelect">
+    <option value="newest">📅 Newest first</option>
+    <option value="popular">🔥 Most logged</option>
+    <option value="alpha">🔤 A-Z</option>
+  </select>
+
+  <button type="button" class="secondary" id="clearSearchButton" style="margin-top:0;">
+    Clear search
+  </button>
+</div>
 
       <div class="faq-list" id="faqList"></div>
     </div>
@@ -523,6 +645,43 @@
       <button type="submit">Log in</button>
     </div>
   </form>
+</dialog>
+
+  <button type="button" class="help-fab" id="helpBtn" title="Help / How-to">
+  ?
+</button>
+
+<dialog id="helpDialog">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="card-title" style="margin:0;">🔥 Quick Start Guide</h2>
+    <button type="button" class="secondary" id="closeHelpBtn">✕</button>
+  </div>
+  
+  <p class="muted" style="margin-top:0.5rem;">How to keep the log fire burning.</p>
+
+  <h3>1. Find & Answer</h3>
+  <ul>
+    <li><strong>Search:</strong> Use the right-hand panel to find errors or tags.</li>
+    <li><strong>Copy:</strong> Click the "Copy" button to grab the answer instantly.</li>
+    <li><strong>Filter:</strong> Click any blue Tag pill to filter by topic.</li>
+  </ul>
+
+  <h3>2. Log the "Hits" (+1)</h3>
+  <ul>
+    <li><strong>The Log Fire:</strong> If a question comes up again, click the <strong>+1 Button</strong>.</li>
+    <li>This tracks the "heat" of an issue. High counts get a <span class="badge hot-badge">🔥 Hot</span> badge.</li>
+  </ul>
+
+  <h3>3. Add Knowledge</h3>
+  <ul>
+    <li><strong>New FAQs:</strong> Use the form on the left.</li>
+    <li><strong>Tags:</strong> e.g., <em>login, video, cloud</em> (helps search later).</li>
+    <li><strong>Privacy:</strong> Please do <strong>not</strong> enter real names or IDs.</li>
+  </ul>
+
+  <div style="text-align: right; margin-top: 2rem;">
+    <button type="button" onclick="document.getElementById('helpDialog').close()">Got it</button>
+  </div>
 </dialog>
 
 <script type="module">
@@ -624,6 +783,14 @@
   const clearFormButton = document.getElementById("clearFormButton");
   const searchInput = document.getElementById("searchInput");
   const clearSearchButton = document.getElementById("clearSearchButton");
+
+const sortSelect = document.getElementById("sortSelect");
+
+  sortSelect.addEventListener("change", () => {
+    renderList();
+    setStatus("List sorted.");
+  });
+  
   const faqList = document.getElementById("faqList");
   const formHint = document.getElementById("formHint");
   const adminToggleBtn = document.getElementById("adminToggle");
@@ -773,19 +940,49 @@
     return matches;
   }
 
-  // ===== RENDERING =====
-  function renderList() {
+function renderList() {
     const q = searchInput.value.toLowerCase().trim();
+    
+    // --- SETTING: The Hybrid "Hard Floor" ---
+    // A question must have at least this many logs to ever be considered "Hot"
+    const MIN_HOT_VOTES = 3; 
+
+    // 1. GET SORT SETTING
+    const sortEl = document.getElementById("sortSelect");
+    const sortType = sortEl ? sortEl.value : "newest"; 
+
     faqList.innerHTML = "";
 
+    // 2. CALCULATE HOT THRESHOLD (Relative Top 5)
+    let hotThreshold = 999999; 
+    const sortedByCount = [...faqItems].sort((a, b) => (b.count || 0) - (a.count || 0));
+    
+    if (sortedByCount.length > 0) {
+      // Find the 5th item (index 4), or the last item if less than 5 exist
+      const cutoffIndex = Math.min(sortedByCount.length - 1, 4);
+      hotThreshold = sortedByCount[cutoffIndex].count;
+    }
+
     let items = faqItems;
+
+    // 3. FILTER
     if (q) {
       items = items.filter(item => {
-        const text = (item.question + " " + item.answer + " " + (item.video || "") + " " + item.tags.join(" "))
-          .toLowerCase();
+        const text = (item.question + " " + item.answer + " " + (item.video || "") + " " + item.tags.join(" ")).toLowerCase();
         return text.includes(q);
       });
     }
+
+    // 4. SORT
+    items.sort((a, b) => {
+      if (sortType === "popular") {
+        return (b.count || 0) - (a.count || 0);
+      } else if (sortType === "alpha") {
+        return a.question.localeCompare(b.question);
+      } else {
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      }
+    });
 
     if (!items.length) {
       const p = document.createElement("p");
@@ -805,37 +1002,50 @@
       const title = document.createElement("strong");
       title.textContent = item.question;
 
-      const badge = document.createElement("div");
-      badge.className = "badge";
-      badge.textContent = (item.count || 0) + " times";
+      // BADGES
+      const badgeContainer = document.createElement("div");
+      badgeContainer.style.display = "flex";
+      badgeContainer.style.gap = "0.5rem";
+
+      // --- HYBRID LOGIC START ---
+      // 1. Must satisfy the relative Top 5 threshold
+      // 2. Must satisfy the absolute Minimum Floor (MIN_HOT_VOTES)
+      if (item.count >= hotThreshold && item.count >= MIN_HOT_VOTES) {
+        const hotBadge = document.createElement("div");
+        hotBadge.className = "badge hot-badge";
+        hotBadge.textContent = "🔥 Hot";
+        badgeContainer.appendChild(hotBadge);
+      }
+      // --- HYBRID LOGIC END ---
+
+      const countBadge = document.createElement("div");
+      countBadge.className = "badge";
+      countBadge.textContent = (item.count || 0) + " times";
+      badgeContainer.appendChild(countBadge);
+
+      header.appendChild(title);
+      header.appendChild(badgeContainer);
+      wrap.appendChild(header);
 
       const answer = document.createElement("div");
       answer.className = "faq-answer";
       answer.textContent = item.answer || "No answer saved yet.";
-
-      header.appendChild(title);
-      header.appendChild(badge);
-      wrap.appendChild(header);
       wrap.appendChild(answer);
 
       if (item.video) {
         const vid = document.createElement("div");
         vid.className = "faq-video";
-
         let href = item.video.trim();
         if (!/^https?:\/\//i.test(href)) {
           href = "https://" + href.replace(/javascript:/gi, "");
         }
-
         const label = document.createElement("span");
         label.textContent = "Video: ";
-
         const link = document.createElement("a");
         link.href = href;
         link.target = "_blank";
         link.rel = "noopener";
         link.textContent = item.video;
-
         vid.appendChild(label);
         vid.appendChild(link);
         wrap.appendChild(vid);
@@ -843,12 +1053,17 @@
 
       const tags = document.createElement("div");
       tags.className = "faq-tags";
-
       if (item.tags.length) {
         item.tags.forEach(t => {
           const pill = document.createElement("span");
           pill.className = "tag-pill";
           pill.textContent = t;
+          pill.addEventListener("click", (e) => {
+             e.stopPropagation();
+             searchInput.value = t;
+             renderList();
+             setStatus(`Filtered by tag: ${t}`);
+          });
           tags.appendChild(pill);
         });
       } else {
@@ -857,7 +1072,6 @@
         pill.textContent = "untagged";
         tags.appendChild(pill);
       }
-
       wrap.appendChild(tags);
 
       const actions = document.createElement("div");
@@ -873,7 +1087,6 @@
       copyBtn.type = "button";
       copyBtn.className = "secondary";
       copyBtn.textContent = "Copy";
-
       copyBtn.addEventListener("click", () => {
         const originalText = copyBtn.textContent;
         navigator.clipboard.writeText(item.answer || "").then(() => {
@@ -884,11 +1097,8 @@
             copyBtn.textContent = originalText;
             copyBtn.style.opacity = "1";
           }, 1000);
-        }).catch(() => {
-          showError("Failed to copy to clipboard.");
-        });
+        }).catch(() => showError("Failed to copy."));
       });
-
       actions.appendChild(copyBtn);
 
       if (isAdmin) {
@@ -896,17 +1106,13 @@
         editBtn.type = "button";
         editBtn.className = "secondary";
         editBtn.textContent = "Edit";
-        editBtn.addEventListener("click", () => {
-          loadForEdit(item.id);
-        });
-
+        editBtn.addEventListener("click", () => loadForEdit(item.id));
+        
         const deleteBtn = document.createElement("button");
         deleteBtn.type = "button";
         deleteBtn.className = "danger-btn";
         deleteBtn.textContent = "Delete";
-        deleteBtn.addEventListener("click", () => {
-          deleteFAQ(item.id, item.question);
-        });
+        deleteBtn.addEventListener("click", () => deleteFAQ(item.id, item.question));
 
         actions.appendChild(editBtn);
         actions.appendChild(deleteBtn);
@@ -916,7 +1122,7 @@
       faqList.appendChild(wrap);
     });
   }
-
+  
   // ===== DATA LOAD / UPDATE / DELETE =====
   async function loadFAQs() {
     if (!faqsCol) {
@@ -1152,6 +1358,37 @@
       document.body.style.overflow = ""; 
     }
   };
+
+  // ... (Your existing toggleExpand function is here) ...
+
+  // ==========================================
+  // PASTE THIS MISSING PART HERE
+  // ==========================================
+
+  // ===== HELP DIALOG LOGIC =====
+  const helpBtn = document.getElementById("helpBtn");
+  const helpDialog = document.getElementById("helpDialog");
+  const closeHelpBtn = document.getElementById("closeHelpBtn");
+
+  if (helpBtn && helpDialog && closeHelpBtn) {
+    helpBtn.addEventListener("click", () => {
+      helpDialog.showModal();
+    });
+
+    closeHelpBtn.addEventListener("click", () => {
+      helpDialog.close();
+    });
+
+    // Optional: Close if clicking outside the modal box (backdrop)
+    helpDialog.addEventListener("click", (e) => {
+      const rect = helpDialog.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        helpDialog.close();
+      }
+    });
+  }
 </script>
 
 </body>

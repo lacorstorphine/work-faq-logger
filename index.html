@@ -157,22 +157,36 @@
       font: inherit;
       box-sizing: border-box;
     }
+    
+    /* File Input Styling */
+    input[type="file"] {
+        color: var(--muted);
+        font-size: 0.85rem;
+        width: 100%;
+    }
+    input[type="file"]::file-selector-button {
+        border: none;
+        border-radius: 0.4rem;
+        background: var(--border);
+        color: var(--text);
+        padding: 0.3rem 0.6rem;
+        cursor: pointer;
+        margin-right: 0.8rem;
+    }
 
     select {
       background: var(--bg);
       color: var(--text);
       border: 1px solid var(--border);
       
-      /* --- MATCHING THE BUTTONS --- */
-      font-size: 0.8rem;             /* Matches button text size */
-      padding: 0.3rem 1.5rem 0.3rem 0.7rem; /* Matches button padding (extra right padding for arrow) */
-      border-radius: 999px;          /* Matches button "Pill" shape */
+      font-size: 0.8rem;             
+      padding: 0.3rem 1.5rem 0.3rem 0.7rem; 
+      border-radius: 999px;          
       
       font-family: inherit;
       cursor: pointer;
-      appearance: none; /* Removes default ugly arrow to look cleaner */
+      appearance: none; 
       
-      /* Add a custom arrow so it looks good with the pill shape */
       background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
       background-repeat: no-repeat;
       background-position: right 0.5rem center;
@@ -262,7 +276,7 @@
     .badge {
       display: inline-flex;
       align-items: center;
-      justify-content: center; /* Centers the text */
+      justify-content: center; 
       gap: 0.25rem;
       padding: 0.15rem 0.55rem;
       border-radius: 999px;
@@ -270,10 +284,8 @@
       background: rgba(15, 23, 42, 0.14);
       font-size: 0.75rem;
       color: var(--muted);
-      
-      /* --- THE FIX --- */
-      min-width: 75px; /* Force a standard width */
-      height: 24px;    /* Force a standard height */
+      min-width: 75px; 
+      height: 24px;   
       box-sizing: border-box;
     }
 
@@ -302,6 +314,29 @@
     .faq-video a:hover {
       text-decoration: underline;
     }
+    
+    /* --- IMAGE STYLES --- */
+    .faq-image-container {
+      margin-top: 0.8rem;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #000;
+      max-width: 100%;
+    }
+
+    .faq-image {
+      display: block;
+      max-width: 100%;
+      max-height: 250px; /* Limits height in list view */
+      margin: 0 auto;
+      cursor: zoom-in;   /* Shows the magnifying glass */
+      transition: opacity 0.2s;
+    }
+    
+    .faq-image:hover {
+        opacity: 0.9;
+    }
 
     .faq-tags {
       margin-top: 0.4rem;
@@ -316,11 +351,10 @@
       border-radius: 999px;
       background: var(--accent-soft);
       color: var(--muted);
-      cursor: pointer; /* Add this: shows the hand icon */
-      transition: all 0.2s ease; /* Add this: smooth animation */
+      cursor: pointer; 
+      transition: all 0.2s ease; 
     }
 
-    /* Add this new block for hover effect */
     .tag-pill:hover {
       background: var(--accent);
       color: #020617;
@@ -348,6 +382,8 @@
       font-size: 0.8rem;
       margin-top: 0.3rem;
     }
+    
+    .hint a { color: var(--accent); }
 
     .status {
       color: var(--status);
@@ -381,6 +417,30 @@
     dialog::backdrop {
       background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(2px);
+    }
+    
+    /* --- IMAGE POP-OUT (LIGHTBOX) STYLES --- */
+    #imageDialog {
+      background: transparent; /* No white box */
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      overflow: visible; 
+      max-width: 95vw;
+      max-height: 95vh;
+    }
+
+    #imageDialog::backdrop {
+      background: rgba(0, 0, 0, 0.85); /* Darker backdrop */
+      backdrop-filter: blur(5px);
+    }
+
+    #fullSizeImage {
+      max-width: 100%;
+      max-height: 85vh; 
+      border-radius: 0.5rem;
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+      display: block;
     }
 
     /* Expand button - Hidden by default (Mobile) */
@@ -443,14 +503,14 @@
     /* FLOATING HELP BUTTON */
     .help-fab {
       position: fixed;
-      bottom: 1.5rem;   /* Moved slightly closer to corner (was 2rem) */
-      right: 1.5rem;    /* Moved slightly closer to corner (was 2rem) */
-      width: 2.8rem;    /* Smaller size (was 3.5rem) */
-      height: 2.8rem;   /* Smaller size (was 3.5rem) */
+      bottom: 1.5rem;   
+      right: 1.5rem;   
+      width: 2.8rem;   
+      height: 2.8rem;   
       border-radius: 50%;
       background: var(--accent);
       color: #020617;
-      font-size: 1.2rem; /* Smaller question mark (was 1.5rem) */
+      font-size: 1.2rem; 
       font-weight: bold;
       display: flex;
       align-items: center;
@@ -458,7 +518,7 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
       z-index: 500;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
-      cursor: pointer; /* Added this so it shows a hand cursor */
+      cursor: pointer; 
     }
 
     .help-fab:hover {
@@ -487,7 +547,7 @@
       font-size: 0.95rem;
     }
 
-    /* DESKTOP-ONLY LAYOUT & LOGIC (Must be at the bottom) */
+    /* DESKTOP-ONLY LAYOUT & LOGIC */
     @media (min-width: 1200px) {
       .app {
         max-width: 1600px;
@@ -520,24 +580,20 @@
     }
 
     /* --- EQUAL HEIGHT FIXES --- */
-    
-    /* Make the Form Card (Original ID cardLeft) a Flex container so it can stretch contents */
     #cardLeft {
       display: flex;
       flex-direction: column;
     }
 
-    /* Make the form fill the entire height of the card */
     #faqForm {
       display: flex;
       flex-direction: column;
       flex-grow: 1; 
     }
 
-    /* Make the Answer text box grow to fill the empty space */
     #answerInput {
       flex-grow: 1;
-      min-height: 150px; /* Ensures it's never too small */
+      min-height: 150px; 
     }
     
   </style>
@@ -613,6 +669,13 @@
 
         <label for="videoInput" style="margin-top:.6rem;">Video link (optional)</label>
         <input id="videoInput" type="text" placeholder="https://youtube.com/..." />
+        
+        <label for="imageInput" style="margin-top:.6rem;">Image Attachment (Auto-compressed)</label>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <input id="imageInput" type="file" accept="image/*" style="padding: 0.3rem;" />
+          <button type="button" class="secondary" id="removeImageBtn" style="display:none; font-size:0.7rem;">✕ Remove</button>
+        </div>
+        <div id="currentImagePreview" class="hint" style="margin-bottom:0.5rem;"></div>
 
         <label for="tagsInput" style="margin-top:.6rem;">Tags (comma separated)</label>
         <input id="tagsInput" type="text" placeholder="Tags here..." />
@@ -648,7 +711,7 @@
   </form>
 </dialog>
 
-  <button type="button" class="help-fab" id="helpBtn" title="Help / How-to">
+<button type="button" class="help-fab" id="helpBtn" title="Help / How-to">
   ?
 </button>
 
@@ -665,6 +728,7 @@
     <li><strong>Search:</strong> Use the left-hand panel to find errors or tags.</li>
     <li><strong>Copy:</strong> Click the "Copy" button to grab the answer instantly.</li>
     <li><strong>Filter:</strong> Click any blue Tag pill to filter by topic.</li>
+    <li><strong>Zoom:</strong> Click any image to view it full size.</li>
   </ul>
 
   <h3>2. Log the "Hits" (+1)</h3>
@@ -676,12 +740,25 @@
   <h3>3. Add Knowledge</h3>
   <ul>
     <li><strong>New FAQs:</strong> Use the form on the right.</li>
-    <li><strong>Tags:</strong> e.g., <em>login, video, cloud</em> (helps search later).</li>
+    <li><strong>Images:</strong> You can upload one picture (settings, error screen) per FAQ.</li>
     <li><strong>Privacy:</strong> Please do <strong>not</strong> enter real names or IDs.</li>
   </ul>
 
   <div style="text-align: right; margin-top: 2rem;">
     <button type="button" onclick="document.getElementById('helpDialog').close()">Got it</button>
+  </div>
+</dialog>
+
+<dialog id="imageDialog">
+  <div style="position: relative; display: flex; justify-content: center;">
+    
+    <button type="button" id="closeImageBtn" 
+            style="position: absolute; top: -15px; right: -15px; z-index: 10; background: var(--danger); color: white; border-radius: 50%; width: 30px; height: 30px; padding: 0; font-weight: bold; border: 2px solid var(--bg);">
+      ✕
+    </button>
+    
+    <img id="fullSizeImage" src="" alt="Full size" />
+    
   </div>
 </dialog>
 
@@ -704,6 +781,8 @@
     signOut, 
     onAuthStateChanged 
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+  // Note: We removed the Storage imports because we are using Base64 now!
 
   // ===== THEME HANDLING =====
   const THEME_KEY = "faq_theme_preference";
@@ -762,8 +841,8 @@
   let auth;
   let faqsCol;
   let faqItems = [];
-  let editingId = null;              
-  let isAdmin = false;              
+  let editingId = null;               
+  let isAdmin = false;               
   let lastApprovedQuestion = null; 
 
   try {
@@ -785,7 +864,13 @@
   const searchInput = document.getElementById("searchInput");
   const clearSearchButton = document.getElementById("clearSearchButton");
 
-const sortSelect = document.getElementById("sortSelect");
+  // IMAGE INPUTS
+  const imageInput = document.getElementById("imageInput");
+  const removeImageBtn = document.getElementById("removeImageBtn");
+  const currentImagePreview = document.getElementById("currentImagePreview");
+  let currentImageUrl = null; // Tracks existing image during edit
+
+  const sortSelect = document.getElementById("sortSelect");
 
   sortSelect.addEventListener("change", () => {
     renderList();
@@ -803,6 +888,11 @@ const sortSelect = document.getElementById("sortSelect");
   const adminUsernameInput = document.getElementById("adminUsername");
   const adminPasswordInput = document.getElementById("adminPassword");
   const cancelLoginBtn = document.getElementById("cancelLoginBtn");
+
+  // IMAGE POP-OUT ELEMENTS
+  const imageDialog = document.getElementById("imageDialog");
+  const fullSizeImage = document.getElementById("fullSizeImage");
+  const closeImageBtn = document.getElementById("closeImageBtn");
 
   // ===== CHRISTMAS MODE =====
   let xmasEnabled = false;
@@ -883,7 +973,7 @@ const sortSelect = document.getElementById("sortSelect");
 
   // Handle Login Submit
   loginForm.addEventListener("submit", (e) => {
-    e.preventDefault(); // Stop page reload
+    e.preventDefault(); 
 
     const username = adminUsernameInput.value.trim();
     const pw = adminPasswordInput.value;
@@ -894,7 +984,7 @@ const sortSelect = document.getElementById("sortSelect");
     signInWithEmailAndPassword(auth, fakeEmail, pw)
       .then(() => {
         loginDialog.close();
-        loginForm.reset(); // Clear inputs for security
+        loginForm.reset(); 
       })
       .catch((error) => {
         if(error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found') {
@@ -907,6 +997,70 @@ const sortSelect = document.getElementById("sortSelect");
         setStatus("Login failed.");
       });
   });
+
+  // ===== LIGHTBOX (IMAGE POP-OUT) LOGIC =====
+  closeImageBtn.addEventListener("click", () => {
+    imageDialog.close();
+  });
+
+  // Close when clicking the dark backdrop
+  imageDialog.addEventListener("click", (e) => {
+    const rect = fullSizeImage.getBoundingClientRect();
+    const isInImage = (
+      e.clientX >= rect.left &&
+      e.clientX <= rect.right &&
+      e.clientY >= rect.top &&
+      e.clientY <= rect.bottom
+    );
+    
+    if (!isInImage) {
+      imageDialog.close();
+    }
+  });
+
+  // ===== IMAGE FORM LOGIC =====
+  removeImageBtn.addEventListener("click", () => {
+    imageInput.value = ""; // Clear file selection
+    currentImageUrl = null; // Clear tracking URL
+    currentImagePreview.innerHTML = "Image removed (save to apply)";
+    removeImageBtn.style.display = "none";
+  });
+
+
+  // ===== IMAGE COMPRESSOR (CLIENT SIDE) =====
+  // This takes a file, shrinks it, and turns it into a Base64 text string.
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 800; // Resize to max 800px wide
+          const scaleSize = MAX_WIDTH / img.width;
+          
+          if (scaleSize < 1) {
+             canvas.width = MAX_WIDTH;
+             canvas.height = img.height * scaleSize;
+          } else {
+             canvas.width = img.width;
+             canvas.height = img.height;
+          }
+          
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          // Output to JPEG with 0.6 quality (High compression)
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.6);
+          resolve(dataUrl);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  }
 
 
   // ===== DUPLICATE CHECKING =====
@@ -943,9 +1097,6 @@ const sortSelect = document.getElementById("sortSelect");
 
 function renderList() {
     const q = searchInput.value.toLowerCase().trim();
-    
-    // --- SETTING: The Hybrid "Hard Floor" ---
-    // A question must have at least this many logs to ever be considered "Hot"
     const MIN_HOT_VOTES = 3; 
 
     // 1. GET SORT SETTING
@@ -954,12 +1105,11 @@ function renderList() {
 
     faqList.innerHTML = "";
 
-    // 2. CALCULATE HOT THRESHOLD (Relative Top 5)
+    // 2. CALCULATE HOT THRESHOLD
     let hotThreshold = 999999; 
     const sortedByCount = [...faqItems].sort((a, b) => (b.count || 0) - (a.count || 0));
     
     if (sortedByCount.length > 0) {
-      // Find the 5th item (index 4), or the last item if less than 5 exist
       const cutoffIndex = Math.min(sortedByCount.length - 1, 4);
       hotThreshold = sortedByCount[cutoffIndex].count;
     }
@@ -1008,16 +1158,12 @@ function renderList() {
       badgeContainer.style.display = "flex";
       badgeContainer.style.gap = "0.5rem";
 
-      // --- HYBRID LOGIC START ---
-      // 1. Must satisfy the relative Top 5 threshold
-      // 2. Must satisfy the absolute Minimum Floor (MIN_HOT_VOTES)
       if (item.count >= hotThreshold && item.count >= MIN_HOT_VOTES) {
         const hotBadge = document.createElement("div");
         hotBadge.className = "badge hot-badge";
         hotBadge.textContent = "🔥 Hot";
         badgeContainer.appendChild(hotBadge);
       }
-      // --- HYBRID LOGIC END ---
 
       const countBadge = document.createElement("div");
       countBadge.className = "badge";
@@ -1032,6 +1178,28 @@ function renderList() {
       answer.className = "faq-answer";
       answer.textContent = item.answer || "No answer saved yet.";
       wrap.appendChild(answer);
+
+      // --- RENDER IMAGE WITH POP-OUT ---
+      if (item.imageUrl) {
+        const imgContainer = document.createElement("div");
+        imgContainer.className = "faq-image-container";
+        
+        const img = document.createElement("img");
+        img.className = "faq-image";
+        img.src = item.imageUrl;
+        img.alt = "Attachment";
+        img.loading = "lazy";
+        
+        // CLICK TO OPEN DIALOG
+        img.onclick = () => {
+          fullSizeImage.src = item.imageUrl;
+          imageDialog.showModal();
+        };
+        
+        imgContainer.appendChild(img);
+        wrap.appendChild(imgContainer);
+      }
+      // -------------------------------
 
       if (item.video) {
         const vid = document.createElement("div");
@@ -1060,10 +1228,10 @@ function renderList() {
           pill.className = "tag-pill";
           pill.textContent = t;
           pill.addEventListener("click", (e) => {
-             e.stopPropagation();
-             searchInput.value = t;
-             renderList();
-             setStatus(`Filtered by tag: ${t}`);
+              e.stopPropagation();
+              searchInput.value = t;
+              renderList();
+              setStatus(`Filtered by tag: ${t}`);
           });
           tags.appendChild(pill);
         });
@@ -1140,6 +1308,7 @@ function renderList() {
           question: data.question || "",
           answer: data.answer || "",
           video: data.video || "",
+          imageUrl: data.imageUrl || null, // LOAD IMAGE URL
           tags: Array.isArray(data.tags) ? data.tags : [],
           count: data.count || 0,
           createdAt: data.createdAt || 0
@@ -1201,6 +1370,20 @@ function renderList() {
     answerInput.value = item.answer;
     videoInput.value = item.video || "";
     tagsInput.value = item.tags.join(", ");
+    
+    // Image handling
+    currentImageUrl = item.imageUrl || null;
+    imageInput.value = ""; // Clear file input
+    
+    if (currentImageUrl) {
+        // Show a text preview for Base64 (it's too long to show URL)
+        currentImagePreview.innerHTML = `Current image: <span style="color:var(--accent);">Saved in DB</span>`;
+        removeImageBtn.style.display = "inline-block";
+    } else {
+        currentImagePreview.textContent = "";
+        removeImageBtn.style.display = "none";
+    }
+    
     formHint.textContent = "Editing existing FAQ. Saving will update it.";
     setStatus("Editing FAQ.");
     questionInput.focus();
@@ -1209,6 +1392,10 @@ function renderList() {
   function resetEditing() {
     editingId = null;
     formHint.textContent = "";
+    currentImageUrl = null;
+    imageInput.value = "";
+    currentImagePreview.textContent = "";
+    removeImageBtn.style.display = "none";
   }
 
   // ===== FORM SUBMIT =====
@@ -1236,6 +1423,22 @@ function renderList() {
       window.alert("Only admin can edit existing FAQs.");
       return;
     }
+    
+    // --- IMAGE PROCESSING (NO STORAGE) ---
+    const file = imageInput.files[0];
+    let finalImageUrl = currentImageUrl; // Default to old image
+
+    if (file) {
+      setStatus("Compressing image...");
+      try {
+        // Run the compressor to get a short string
+        finalImageUrl = await compressImage(file);
+      } catch (uploadErr) {
+        showError("Image processing failed: " + uploadErr.message);
+        return; 
+      }
+    }
+    // -------------------------------------
 
     const questionNorm = normaliseText(question);
 
@@ -1267,20 +1470,20 @@ function renderList() {
     }
 
     try {
+      const docData = {
+        question,
+        answer,
+        video,
+        tags,
+        imageUrl: finalImageUrl || null
+      };
+
       if (editingId) {
-        await updateDoc(doc(faqsCol, editingId), {
-          question,
-          answer,
-          video,
-          tags
-        });
+        await updateDoc(doc(faqsCol, editingId), docData);
 
         const idx = faqItems.findIndex(f => f.id === editingId);
         if (idx !== -1) {
-          faqItems[idx].question = question;
-          faqItems[idx].answer = answer;
-          faqItems[idx].video = video;
-          faqItems[idx].tags = tags;
+          Object.assign(faqItems[idx], docData);
         }
 
         formHint.textContent = "FAQ updated.";
@@ -1288,27 +1491,18 @@ function renderList() {
         setTimeout(() => {
           if (formHint.textContent === "FAQ updated.") formHint.textContent = "";
         }, 2000);
+        
+        resetEditing();
         editingId = null;
       } else {
         const createdAt = Date.now();
-        const docRef = await addDoc(faqsCol, {
-          question,
-          answer,
-          video,
-          tags,
-          count: 1,
-          createdAt
-        });
+        docData.count = 1;
+        docData.createdAt = createdAt;
+        
+        const docRef = await addDoc(faqsCol, docData);
 
-        faqItems.unshift({
-          id: docRef.id,
-          question,
-          answer,
-          video,
-          tags,
-          count: 1,
-          createdAt
-        });
+        docData.id = docRef.id;
+        faqItems.unshift(docData);
 
         formHint.textContent = "FAQ saved.";
         setStatus("FAQ saved to cloud.");
@@ -1319,7 +1513,7 @@ function renderList() {
 
       errorBox.textContent = "";
       faqForm.reset();
-      resetEditing();
+      resetEditing(); // Clears image inputs too
       renderList();
     } catch (e) {
       showError("Failed to save FAQ: " + e.message);
@@ -1374,7 +1568,7 @@ function renderList() {
       helpDialog.close();
     });
 
-    // Optional: Close if clicking outside the modal box (backdrop)
+    // Close if clicking backdrop
     helpDialog.addEventListener("click", (e) => {
       const rect = helpDialog.getBoundingClientRect();
       const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&

@@ -421,4 +421,1164 @@
     
     /* --- IMAGE POP-OUT (LIGHTBOX) STYLES --- */
     #imageDialog {
-      background:
+      background: transparent; /* No white box */
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      overflow: visible; 
+      max-width: 95vw;
+      max-height: 95vh;
+    }
+
+    #imageDialog::backdrop {
+      background: rgba(0, 0, 0, 0.85); /* Darker backdrop */
+      backdrop-filter: blur(5px);
+    }
+
+    #fullSizeImage {
+      max-width: 100%;
+      max-height: 85vh; 
+      border-radius: 0.5rem;
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+      display: block;
+    }
+
+    /* Expand button - Hidden by default (Mobile) */
+    .expand-btn {
+      display: none; 
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+      z-index: 10;
+      padding: 5px;
+    }
+
+    .expand-btn:hover {
+      color: var(--accent);
+      transform: scale(1.1);
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* MEDIA QUERIES */
+
+    /* Tablet/Mobile Stack */
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .archive-card {
+        position: static;
+      }
+    }
+
+    /* Small Mobile */
+    @media (max-width: 640px) {
+      .card {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      h1 {
+        font-size: 1.2rem;
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .top-right {
+        justify-content: flex-start;
+      }
+    }
+
+    /* FLOATING HELP BUTTON */
+    .help-fab {
+      position: fixed;
+      bottom: 1.5rem;   
+      right: 1.5rem;   
+      width: 2.8rem;   
+      height: 2.8rem;   
+      border-radius: 50%;
+      background: var(--accent);
+      color: #020617;
+      font-size: 1.2rem; 
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 500;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer; 
+    }
+
+    .help-fab:hover {
+      transform: scale(1.1) rotate(15deg);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    }
+
+    /* Help Dialog Specifics */
+    #helpDialog {
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
+    #helpDialog h3 {
+      margin-top: 1.5rem;
+      color: var(--accent);
+    }
+
+    #helpDialog ul {
+      padding-left: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #helpDialog li {
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    /* DESKTOP-ONLY LAYOUT & LOGIC */
+    @media (min-width: 1200px) {
+      .app {
+        max-width: 1600px;
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr 1fr; 
+        gap: 2rem;
+        align-content: start;
+      }
+
+      .expand-btn {
+        display: block; 
+      }
+
+      .card.expanded {
+        position: fixed;
+        top: 5vh; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        width: 90vw; 
+        max-width: 1600px;
+        height: 90vh;
+        z-index: 10000;
+        margin: 0;
+        overflow-y: auto;
+        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.85);
+        border-color: var(--accent);
+      }
+    }
+
+    /* --- EQUAL HEIGHT FIXES --- */
+    #cardLeft {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #faqForm {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1; 
+    }
+
+    #answerInput {
+      flex-grow: 1;
+      min-height: 150px; 
+    }
+    
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <header class="top-bar">
+    <div class="top-left">
+      <h1>BROADCAST MEDIA SYSTEMS FAQ LOG FIRE 🪵🔥</h1>
+      <p class="hint">Don’t enter names, IDs or other personal data. This is for general how-to steps only.</p>
+    </div>
+    <div class="top-right">
+      <button type="button" class="secondary theme-toggle-btn" id="themeToggle">
+        Toggle theme
+      </button>
+      <button type="button" class="secondary admin-toggle-btn" id="adminToggle">
+        Admin login
+      </button>
+      <button type="button" class="secondary" id="xmasToggle">
+        🎅
+      </button>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    
+    <div class="card archive-card" id="cardRight">
+      
+      <button type="button" class="expand-btn" onclick="toggleExpand('cardRight', this)">
+        ⤢
+      </button>
+
+      <h2 class="card-title">Search FAQs</h2>
+
+      <label for="searchInput" style="margin-bottom:.35rem;">Search</label>
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Search questions, answers, or tags…"
+      />
+      
+      <div class="row" style="align-items: center; justify-content: space-between; margin-top: 0.6rem;">
+        <select id="sortSelect">
+          <option value="newest">📅 Newest first</option>
+          <option value="popular">🔥 Most logged</option>
+          <option value="alpha">🔤 A-Z</option>
+        </select>
+
+        <button type="button" class="secondary" id="clearSearchButton" style="margin-top:0;">
+          Clear search
+        </button>
+      </div>
+
+      <div class="faq-list" id="faqList"></div>
+    </div>
+
+    <div class="card" id="cardLeft">
+      
+      <button type="button" class="expand-btn" onclick="toggleExpand('cardLeft', this)">
+        ⤢
+      </button>
+
+      <h2 class="card-title">Add / Edit FAQ</h2>
+
+      <form id="faqForm">
+        <label for="questionInput">Question</label>
+        <input id="questionInput" type="text" required placeholder="Ask your question..." />
+
+        <label for="answerInput" style="margin-top:.6rem;">Answer / steps</label>
+        <textarea id="answerInput" placeholder="Step 1... Step 2..."></textarea>
+
+        <label for="videoInput" style="margin-top:.6rem;">Video link (optional)</label>
+        <input id="videoInput" type="text" placeholder="https://youtube.com/..." />
+        
+        <label for="imageInput" style="margin-top:.6rem;">Image Attachment (Auto-compressed)</label>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <input id="imageInput" type="file" accept="image/*" style="padding: 0.3rem;" />
+          <button type="button" class="secondary" id="removeImageBtn" style="display:none; font-size:0.7rem;">✕ Remove</button>
+        </div>
+        <div id="currentImagePreview" class="hint" style="margin-bottom:0.5rem;"></div>
+
+        <label for="tagsInput" style="margin-top:.6rem;">Tags (comma separated)</label>
+        <input id="tagsInput" type="text" placeholder="Tags here..." />
+
+        <div class="row">
+          <button type="submit">Save FAQ</button>
+          <button type="button" class="secondary" id="clearFormButton">Clear</button>
+        </div>
+
+        <div id="formHint" class="hint"></div>
+        <div id="errorBox" class="error"></div>
+        <div id="statusBox" class="status"></div>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+
+<dialog id="loginDialog">
+  <h2 class="card-title" style="margin-top:0;">Admin Login</h2>
+  <form id="loginForm" method="dialog">
+    <label for="adminUsername">Username</label>
+    <input type="text" id="adminUsername" required style="margin-bottom: 1rem;" />
+    
+    <label for="adminPassword">Password</label>
+    <input type="password" id="adminPassword" required style="margin-bottom: 1.5rem;" />
+    
+    <div class="row" style="justify-content: flex-end;">
+      <button type="button" class="secondary" id="cancelLoginBtn">Cancel</button>
+      <button type="submit">Log in</button>
+    </div>
+  </form>
+</dialog>
+
+<button type="button" class="help-fab" id="helpBtn" title="Help / How-to">
+  ?
+</button>
+
+<dialog id="helpDialog">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="card-title" style="margin:0;">🔥 Quick Start Guide</h2>
+    <button type="button" class="secondary" id="closeHelpBtn">✕</button>
+  </div>
+  
+  <p class="muted" style="margin-top:0.5rem;">How to keep the log fire burning.</p>
+
+  <h3>1. Find & Answer</h3>
+  <ul>
+    <li><strong>Search:</strong> Use the left-hand panel to find errors or tags.</li>
+    <li><strong>Copy:</strong> Click the "Copy" button to grab the answer instantly.</li>
+    <li><strong>Filter:</strong> Click any blue Tag pill to filter by topic.</li>
+    <li><strong>Zoom:</strong> Click any image to view it full size.</li>
+  </ul>
+
+  <h3>2. Log the "Hits" (+1)</h3>
+  <ul>
+    <li><strong>The Log Fire:</strong> If a question comes up again, click the <strong>+1 Button</strong>.</li>
+    <li>This tracks the "heat" of an issue. High counts get a <span class="badge hot-badge">🔥 Hot</span> badge.</li>
+  </ul>
+
+  <h3>3. Add Knowledge</h3>
+  <ul>
+    <li><strong>New FAQs:</strong> Use the form on the right.</li>
+    <li><strong>Images:</strong> You can upload one picture (settings, error screen) per FAQ.</li>
+    <li><strong>Privacy:</strong> Please do <strong>not</strong> enter real names or IDs.</li>
+  </ul>
+
+  <div style="text-align: right; margin-top: 2rem;">
+    <button type="button" onclick="document.getElementById('helpDialog').close()">Got it</button>
+  </div>
+</dialog>
+
+<dialog id="imageDialog">
+  <div style="position: relative; display: flex; justify-content: center;">
+    
+    <button type="button" id="closeImageBtn" 
+            style="position: absolute; top: -15px; right: -15px; z-index: 10; background: var(--danger); color: white; border-radius: 50%; width: 30px; height: 30px; padding: 0; font-weight: bold; border: 2px solid var(--bg);">
+      ✕
+    </button>
+    
+    <img id="fullSizeImage" src="" alt="Full size" />
+    
+  </div>
+</dialog>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    addDoc,
+    doc,
+    updateDoc,
+    deleteDoc,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged 
+  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+  // Note: We removed the Storage imports because we are using Base64 now!
+
+  // ===== THEME HANDLING =====
+  const THEME_KEY = "faq_theme_preference";
+  const htmlEl = document.documentElement;
+  const themeToggleBtn = document.getElementById("themeToggle");
+
+  function applyTheme(theme) {
+    htmlEl.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+    themeToggleBtn.textContent = theme === "dark" ? "Light mode" : "Dark mode";
+  }
+
+  function initTheme() {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === "light" || stored === "dark") {
+      applyTheme(stored);
+      return;
+    }
+    const prefersDark = window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(prefersDark ? "dark" : "light");
+  }
+
+  themeToggleBtn.addEventListener("click", () => {
+    const current = htmlEl.getAttribute("data-theme") || "dark";
+    applyTheme(current === "dark" ? "light" : "dark");
+  });
+
+  initTheme();
+
+  // ===== STATUS / ERROR =====
+  const statusBox = document.getElementById("statusBox");
+  const errorBox = document.getElementById("errorBox");
+  function setStatus(msg) {
+    statusBox.textContent = msg;
+  }
+  function showError(msg) {
+    console.error(msg);
+    errorBox.textContent = msg;
+  }
+
+  setStatus("Initialising Firebase…");
+
+  // ===== FIREBASE CONFIG =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyADy9Kac_a_F_4v2BkAZkD1WhDTqCTACuE",
+    authDomain: "work-faq-logger.firebaseapp.com",
+    projectId: "work-faq-logger",
+    storageBucket: "work-faq-logger.firebasestorage.app",
+    messagingSenderId: "141636449990",
+    appId: "1:141636449990:web:acfbd248f42cfda629c9c7",
+    measurementId: "G-V66S24L0DV"
+  };
+
+  let db;
+  let auth;
+  let faqsCol;
+  let faqItems = [];
+  let editingId = null;               
+  let isAdmin = false;               
+  let lastApprovedQuestion = null; 
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+    faqsCol = collection(db, "faqs");
+    setStatus("Firebase initialised. Loading FAQs…");
+  } catch (e) {
+    showError("Firebase init failed: " + e);
+  }
+
+  const faqForm = document.getElementById("faqForm");
+  const questionInput = document.getElementById("questionInput");
+  const answerInput = document.getElementById("answerInput");
+  const videoInput = document.getElementById("videoInput");
+  const tagsInput = document.getElementById("tagsInput");
+  const clearFormButton = document.getElementById("clearFormButton");
+  const searchInput = document.getElementById("searchInput");
+  const clearSearchButton = document.getElementById("clearSearchButton");
+
+  // IMAGE INPUTS
+  const imageInput = document.getElementById("imageInput");
+  const removeImageBtn = document.getElementById("removeImageBtn");
+  const currentImagePreview = document.getElementById("currentImagePreview");
+  let currentImageUrl = null; // Tracks existing image during edit
+
+  const sortSelect = document.getElementById("sortSelect");
+
+  sortSelect.addEventListener("change", () => {
+    renderList();
+    setStatus("List sorted.");
+  });
+  
+  const faqList = document.getElementById("faqList");
+  const formHint = document.getElementById("formHint");
+  const adminToggleBtn = document.getElementById("adminToggle");
+  const xmasToggle = document.getElementById("xmasToggle");
+
+  // LOGIN MODAL ELEMENTS
+  const loginDialog = document.getElementById("loginDialog");
+  const loginForm = document.getElementById("loginForm");
+  const adminUsernameInput = document.getElementById("adminUsername");
+  const adminPasswordInput = document.getElementById("adminPassword");
+  const cancelLoginBtn = document.getElementById("cancelLoginBtn");
+
+  // IMAGE POP-OUT ELEMENTS
+  const imageDialog = document.getElementById("imageDialog");
+  const fullSizeImage = document.getElementById("fullSizeImage");
+  const closeImageBtn = document.getElementById("closeImageBtn");
+
+  // ===== CHRISTMAS MODE =====
+  let xmasEnabled = false;
+  let snowContainer = null;
+  let snowInterval = null;
+
+  function startSnow() {
+    if (snowContainer) return;
+    snowContainer = document.createElement("div");
+    snowContainer.id = "snowContainer";
+    document.body.appendChild(snowContainer);
+
+    snowInterval = setInterval(() => {
+      const flake = document.createElement("div");
+      flake.className = "snowflake";
+      flake.textContent = "❄";
+      const size = Math.random() * 1.2 + 0.4;
+      flake.style.fontSize = size + "rem";
+      flake.style.left = Math.random() * 100 + "vw";
+      flake.style.animationDuration = 4 + Math.random() * 6 + "s";
+      snowContainer.appendChild(flake);
+      setTimeout(() => flake.remove(), 12000);
+    }, 200);
+  }
+
+  function stopSnow() {
+    if (snowContainer) snowContainer.remove();
+    snowContainer = null;
+    if (snowInterval) clearInterval(snowInterval);
+    snowInterval = null;
+  }
+
+  xmasToggle.addEventListener("click", () => {
+    xmasEnabled = !xmasEnabled;
+    if (xmasEnabled) {
+      startSnow();
+      xmasToggle.textContent = "🎄";
+    } else {
+      stopSnow();
+      xmasToggle.textContent = "🎅";
+    }
+  });
+
+  // ===== SECURE ADMIN HANDLING (MODAL VERSION) =====
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isAdmin = true;
+      const username = user.email.split('@')[0]; 
+      setStatus(`Logged in as ${username}`);
+      adminToggleBtn.textContent = "Log out (admin)";
+    } else {
+      isAdmin = false;
+      editingId = null;
+      faqForm.reset();
+      formHint.textContent = "";
+      adminToggleBtn.textContent = "Admin login";
+      if(faqItems.length > 0) setStatus("Admin mode disabled.");
+    }
+    renderList();
+  });
+
+  // Open Modal
+  adminToggleBtn.addEventListener("click", () => {
+    if (!isAdmin) {
+      loginDialog.showModal();
+      adminUsernameInput.focus();
+    } else {
+      signOut(auth).then(() => {
+        setStatus("Logged out.");
+      });
+    }
+  });
+
+  // Close Modal
+  cancelLoginBtn.addEventListener("click", () => {
+    loginDialog.close();
+  });
+
+  // Handle Login Submit
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault(); 
+
+    const username = adminUsernameInput.value.trim();
+    const pw = adminPasswordInput.value;
+    const fakeEmail = username + "@bmslogger.local";
+
+    setStatus("Logging in...");
+    
+    signInWithEmailAndPassword(auth, fakeEmail, pw)
+      .then(() => {
+        loginDialog.close();
+        loginForm.reset(); 
+      })
+      .catch((error) => {
+        if(error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found') {
+            window.alert("Login failed: Username not found.");
+        } else if (error.code === 'auth/wrong-password') {
+            window.alert("Login failed: Incorrect password.");
+        } else {
+            window.alert("Login failed: " + error.message);
+        }
+        setStatus("Login failed.");
+      });
+  });
+
+  // ===== LIGHTBOX (IMAGE POP-OUT) LOGIC =====
+  closeImageBtn.addEventListener("click", () => {
+    imageDialog.close();
+  });
+
+  // Close when clicking the dark backdrop
+  imageDialog.addEventListener("click", (e) => {
+    const rect = fullSizeImage.getBoundingClientRect();
+    const isInImage = (
+      e.clientX >= rect.left &&
+      e.clientX <= rect.right &&
+      e.clientY >= rect.top &&
+      e.clientY <= rect.bottom
+    );
+    
+    if (!isInImage) {
+      imageDialog.close();
+    }
+  });
+
+  // ===== IMAGE FORM LOGIC =====
+  removeImageBtn.addEventListener("click", () => {
+    imageInput.value = ""; // Clear file selection
+    currentImageUrl = null; // Clear tracking URL
+    currentImagePreview.innerHTML = "Image removed (save to apply)";
+    removeImageBtn.style.display = "none";
+  });
+
+
+  // ===== IMAGE COMPRESSOR (CLIENT SIDE) =====
+  // This takes a file, shrinks it, and turns it into a Base64 text string.
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 800; // Resize to max 800px wide
+          const scaleSize = MAX_WIDTH / img.width;
+          
+          if (scaleSize < 1) {
+             canvas.width = MAX_WIDTH;
+             canvas.height = img.height * scaleSize;
+          } else {
+             canvas.width = img.width;
+             canvas.height = img.height;
+          }
+          
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          // Output to JPEG with 0.6 quality (High compression)
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.6);
+          resolve(dataUrl);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  }
+
+
+  // ===== DUPLICATE CHECKING =====
+  function normaliseText(str) {
+    return str.toLowerCase().replace(/\s+/g, " ").trim();
+  }
+
+  function stringSimilarity(a, b) {
+    const aTokens = new Set(normaliseText(a).split(" ").filter(Boolean));
+    const bTokens = new Set(normaliseText(b).split(" ").filter(Boolean));
+    if (aTokens.size === 0 || bTokens.size === 0) return 0;
+
+    let intersection = 0;
+    aTokens.forEach(tok => {
+      if (bTokens.has(tok)) intersection++;
+    });
+
+    const union = aTokens.size + bTokens.size - intersection;
+    if (union === 0) return 0;
+    return intersection / union;
+  }
+
+  function findSimilarQuestions(question, threshold, excludeId) {
+    const matches = [];
+    faqItems.forEach(item => {
+      if (excludeId && item.id === excludeId) return;
+      const sim = stringSimilarity(question, item.question || "");
+      if (sim >= threshold) {
+        matches.push({ item, sim });
+      }
+    });
+    return matches;
+  }
+
+function renderList() {
+    const q = searchInput.value.toLowerCase().trim();
+    const MIN_HOT_VOTES = 3; 
+
+    // 1. GET SORT SETTING
+    const sortEl = document.getElementById("sortSelect");
+    const sortType = sortEl ? sortEl.value : "newest"; 
+
+    faqList.innerHTML = "";
+
+    // 2. CALCULATE HOT THRESHOLD
+    let hotThreshold = 999999; 
+    const sortedByCount = [...faqItems].sort((a, b) => (b.count || 0) - (a.count || 0));
+    
+    if (sortedByCount.length > 0) {
+      const cutoffIndex = Math.min(sortedByCount.length - 1, 4);
+      hotThreshold = sortedByCount[cutoffIndex].count;
+    }
+
+    let items = faqItems;
+
+    // 3. FILTER
+    if (q) {
+      items = items.filter(item => {
+        const text = (item.question + " " + item.answer + " " + (item.video || "") + " " + item.tags.join(" ")).toLowerCase();
+        return text.includes(q);
+      });
+    }
+
+    // 4. SORT
+    items.sort((a, b) => {
+      if (sortType === "popular") {
+        return (b.count || 0) - (a.count || 0);
+      } else if (sortType === "alpha") {
+        return a.question.localeCompare(b.question);
+      } else {
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      }
+    });
+
+    if (!items.length) {
+      const p = document.createElement("p");
+      p.className = "muted";
+      p.textContent = faqItems.length ? "No FAQs match your search." : "No FAQs yet. Add one on the left.";
+      faqList.appendChild(p);
+      return;
+    }
+
+    items.forEach(item => {
+      const wrap = document.createElement("div");
+      wrap.className = "faq-item";
+
+      const header = document.createElement("div");
+      header.className = "faq-header";
+
+      const title = document.createElement("strong");
+      title.textContent = item.question;
+
+      // BADGES
+      const badgeContainer = document.createElement("div");
+      badgeContainer.style.display = "flex";
+      badgeContainer.style.gap = "0.5rem";
+
+      if (item.count >= hotThreshold && item.count >= MIN_HOT_VOTES) {
+        const hotBadge = document.createElement("div");
+        hotBadge.className = "badge hot-badge";
+        hotBadge.textContent = "🔥 Hot";
+        badgeContainer.appendChild(hotBadge);
+      }
+
+      const countBadge = document.createElement("div");
+      countBadge.className = "badge";
+      countBadge.textContent = (item.count || 0) + " times";
+      badgeContainer.appendChild(countBadge);
+
+      header.appendChild(title);
+      header.appendChild(badgeContainer);
+      wrap.appendChild(header);
+
+      const answer = document.createElement("div");
+      answer.className = "faq-answer";
+      answer.textContent = item.answer || "No answer saved yet.";
+      wrap.appendChild(answer);
+
+      // --- RENDER IMAGE WITH POP-OUT ---
+      if (item.imageUrl) {
+        const imgContainer = document.createElement("div");
+        imgContainer.className = "faq-image-container";
+        
+        const img = document.createElement("img");
+        img.className = "faq-image";
+        img.src = item.imageUrl;
+        img.alt = "Attachment";
+        img.loading = "lazy";
+        
+        // CLICK TO OPEN DIALOG
+        img.onclick = () => {
+          fullSizeImage.src = item.imageUrl;
+          imageDialog.showModal();
+        };
+        
+        imgContainer.appendChild(img);
+        wrap.appendChild(imgContainer);
+      }
+      // -------------------------------
+
+      if (item.video) {
+        const vid = document.createElement("div");
+        vid.className = "faq-video";
+        let href = item.video.trim();
+        if (!/^https?:\/\//i.test(href)) {
+          href = "https://" + href.replace(/javascript:/gi, "");
+        }
+        const label = document.createElement("span");
+        label.textContent = "Video: ";
+        const link = document.createElement("a");
+        link.href = href;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = item.video;
+        vid.appendChild(label);
+        vid.appendChild(link);
+        wrap.appendChild(vid);
+      }
+
+      const tags = document.createElement("div");
+      tags.className = "faq-tags";
+      if (item.tags.length) {
+        item.tags.forEach(t => {
+          const pill = document.createElement("span");
+          pill.className = "tag-pill";
+          pill.textContent = t;
+          pill.addEventListener("click", (e) => {
+              e.stopPropagation();
+              searchInput.value = t;
+              renderList();
+              setStatus(`Filtered by tag: ${t}`);
+          });
+          tags.appendChild(pill);
+        });
+      } else {
+        const pill = document.createElement("span");
+        pill.className = "tag-pill tag-pill--muted";
+        pill.textContent = "untagged";
+        tags.appendChild(pill);
+      }
+      wrap.appendChild(tags);
+
+      const actions = document.createElement("div");
+      actions.className = "faq-actions";
+
+      const logBtn = document.createElement("button");
+      logBtn.type = "button";
+      logBtn.textContent = "+1";
+      logBtn.addEventListener("click", () => incrementCount(item.id));
+      actions.appendChild(logBtn);
+
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "secondary";
+      copyBtn.textContent = "Copy";
+      copyBtn.addEventListener("click", () => {
+        const originalText = copyBtn.textContent;
+        navigator.clipboard.writeText(item.answer || "").then(() => {
+          copyBtn.textContent = "Copied";
+          copyBtn.style.opacity = "0.6";
+          setStatus("Answer copied.");
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.style.opacity = "1";
+          }, 1000);
+        }).catch(() => showError("Failed to copy."));
+      });
+      actions.appendChild(copyBtn);
+
+      if (isAdmin) {
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className = "secondary";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => loadForEdit(item.id));
+        
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "danger-btn";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => deleteFAQ(item.id, item.question));
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+      }
+
+      wrap.appendChild(actions);
+      faqList.appendChild(wrap);
+    });
+  }
+  
+  // ===== DATA LOAD / UPDATE / DELETE =====
+  async function loadFAQs() {
+    if (!faqsCol) {
+      showError("Firestore not initialised.");
+      return;
+    }
+    try {
+      const snap = await getDocs(query(faqsCol, orderBy("createdAt", "desc")));
+      faqItems = [];
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        faqItems.push({
+          id: docSnap.id,
+          question: data.question || "",
+          answer: data.answer || "",
+          video: data.video || "",
+          imageUrl: data.imageUrl || null, // LOAD IMAGE URL
+          tags: Array.isArray(data.tags) ? data.tags : [],
+          count: data.count || 0,
+          createdAt: data.createdAt || 0
+        });
+      });
+      setStatus("Loaded " + faqItems.length + " FAQs from cloud.");
+      renderList();
+    } catch (e) {
+      showError("Failed to load FAQs: " + e.message);
+      setStatus("Load failed.");
+    }
+  }
+
+  async function incrementCount(id) {
+    const item = faqItems.find(f => f.id === id);
+    if (!item) return;
+    const newCount = (item.count || 0) + 1;
+    item.count = newCount;
+    renderList();
+
+    try {
+      await updateDoc(doc(faqsCol, id), { count: newCount });
+      setStatus("Logged occurrence.");
+    } catch (e) {
+      item.count = newCount - 1;
+      renderList();
+      showError("Failed to log occurrence: " + e.message);
+    }
+  }
+
+  async function deleteFAQ(id, question) {
+    if(!isAdmin) return;
+    const confirmed = window.confirm(
+      `Delete this FAQ?\n\n"${question}"\n\nThis cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteDoc(doc(faqsCol, id));
+      faqItems = faqItems.filter(f => f.id !== id);
+      renderList();
+      setStatus("FAQ deleted.");
+      if (editingId === id) {
+        faqForm.reset();
+        editingId = null;
+        formHint.textContent = "";
+      }
+    } catch (e) {
+      showError("Failed to delete FAQ: " + e.message);
+      setStatus("Delete failed.");
+    }
+  }
+
+  function loadForEdit(id) {
+    const item = faqItems.find(f => f.id === id);
+    if (!item) return;
+    editingId = id;
+    questionInput.value = item.question;
+    answerInput.value = item.answer;
+    videoInput.value = item.video || "";
+    tagsInput.value = item.tags.join(", ");
+    
+    // Image handling
+    currentImageUrl = item.imageUrl || null;
+    imageInput.value = ""; // Clear file input
+    
+    if (currentImageUrl) {
+        // Show a text preview for Base64 (it's too long to show URL)
+        currentImagePreview.innerHTML = `Current image: <span style="color:var(--accent);">Saved in DB</span>`;
+        removeImageBtn.style.display = "inline-block";
+    } else {
+        currentImagePreview.textContent = "";
+        removeImageBtn.style.display = "none";
+    }
+    
+    formHint.textContent = "Editing existing FAQ. Saving will update it.";
+    setStatus("Editing FAQ.");
+    questionInput.focus();
+  }
+
+  function resetEditing() {
+    editingId = null;
+    formHint.textContent = "";
+    currentImageUrl = null;
+    imageInput.value = "";
+    currentImagePreview.textContent = "";
+    removeImageBtn.style.display = "none";
+  }
+
+  // ===== FORM SUBMIT =====
+  faqForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const question = questionInput.value.trim();
+    if (!question) return;
+
+    const answer = answerInput.value.trim();
+    const video = videoInput.value.trim();
+    const tags = tagsInput.value
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean);
+
+    if (tags.length === 0) {
+      showError("Please add at least one tag before saving.");
+      setStatus("Save cancelled.");
+      tagsInput.focus();
+      return;
+    }
+
+    if (editingId && !isAdmin) {
+      window.alert("Only admin can edit existing FAQs.");
+      return;
+    }
+    
+    // --- IMAGE PROCESSING (NO STORAGE) ---
+    const file = imageInput.files[0];
+    let finalImageUrl = currentImageUrl; // Default to old image
+
+    if (file) {
+      setStatus("Compressing image...");
+      try {
+        // Run the compressor to get a short string
+        finalImageUrl = await compressImage(file);
+      } catch (uploadErr) {
+        showError("Image processing failed: " + uploadErr.message);
+        return; 
+      }
+    }
+    // -------------------------------------
+
+    const questionNorm = normaliseText(question);
+
+    if (questionNorm !== lastApprovedQuestion) {
+      const softThreshold = 0.6;
+      const hardThreshold = 0.85;
+
+      const similarAll = findSimilarQuestions(question, softThreshold, editingId);
+      if (similarAll.length > 0) {
+        const similarHard = similarAll.filter(s => s.sim >= hardThreshold);
+        const useList = (similarHard.length > 0 ? similarHard : similarAll).slice(0, 5);
+
+        const list = useList
+          .map(s => `• ${s.item.question} (${Math.round(s.sim * 100)}% similar)`)
+          .join("\n");
+
+        const proceed = window.confirm(
+          "This question looks similar to existing FAQ(s):\n\n" +
+          list +
+          "\n\nIf you simply meant to record that this question came up again, click Cancel and use the '+1' button on the existing FAQ.\n\nSave anyway?"
+        );
+
+        if (!proceed) {
+          setStatus("Save cancelled due to possible duplicate.");
+          return;
+        }
+        lastApprovedQuestion = questionNorm;
+      }
+    }
+
+    try {
+      const docData = {
+        question,
+        answer,
+        video,
+        tags,
+        imageUrl: finalImageUrl || null
+      };
+
+      if (editingId) {
+        await updateDoc(doc(faqsCol, editingId), docData);
+
+        const idx = faqItems.findIndex(f => f.id === editingId);
+        if (idx !== -1) {
+          Object.assign(faqItems[idx], docData);
+        }
+
+        formHint.textContent = "FAQ updated.";
+        setStatus("FAQ updated in cloud.");
+        setTimeout(() => {
+          if (formHint.textContent === "FAQ updated.") formHint.textContent = "";
+        }, 2000);
+        
+        resetEditing();
+        editingId = null;
+      } else {
+        const createdAt = Date.now();
+        docData.count = 1;
+        docData.createdAt = createdAt;
+        
+        const docRef = await addDoc(faqsCol, docData);
+
+        docData.id = docRef.id;
+        faqItems.unshift(docData);
+
+        formHint.textContent = "FAQ saved.";
+        setStatus("FAQ saved to cloud.");
+        setTimeout(() => {
+          if (formHint.textContent === "FAQ saved.") formHint.textContent = "";
+        }, 2000);
+      }
+
+      errorBox.textContent = "";
+      faqForm.reset();
+      resetEditing(); // Clears image inputs too
+      renderList();
+    } catch (e) {
+      showError("Failed to save FAQ: " + e.message);
+      setStatus("Save failed.");
+    }
+  });
+
+  clearFormButton.addEventListener("click", () => {
+    faqForm.reset();
+    resetEditing();
+    lastApprovedQuestion = null;
+    setStatus("Form cleared.");
+    errorBox.textContent = "";
+  });
+
+  searchInput.addEventListener("input", renderList);
+
+  clearSearchButton.addEventListener("click", () => {
+    searchInput.value = "";
+    renderList();
+    setStatus("Search cleared.");
+  });
+
+  loadFAQs();
+
+  window.toggleExpand = function(cardId, btn) {
+    const card = document.getElementById(cardId);
+    card.classList.toggle("expanded");
+    const isExpanded = card.classList.contains("expanded");
+    if (isExpanded) {
+      btn.textContent = "✕"; 
+      btn.title = "Close focus mode";
+      document.body.style.overflow = "hidden"; 
+    } else {
+      btn.textContent = "⤢"; 
+      btn.title = "Expand to focus";
+      document.body.style.overflow = ""; 
+    }
+  };
+
+  // ===== HELP DIALOG LOGIC =====
+  const helpBtn = document.getElementById("helpBtn");
+  const helpDialog = document.getElementById("helpDialog");
+  const closeHelpBtn = document.getElementById("closeHelpBtn");
+
+  if (helpBtn && helpDialog && closeHelpBtn) {
+    helpBtn.addEventListener("click", () => {
+      helpDialog.showModal();
+    });
+
+    closeHelpBtn.addEventListener("click", () => {
+      helpDialog.close();
+    });
+
+    // Close if clicking backdrop
+    helpDialog.addEventListener("click", (e) => {
+      const rect = helpDialog.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        helpDialog.close();
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

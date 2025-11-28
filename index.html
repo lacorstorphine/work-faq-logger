@@ -1358,6 +1358,37 @@ function renderList() {
       document.body.style.overflow = ""; 
     }
   };
+
+  // ... (Your existing toggleExpand function is here) ...
+
+  // ==========================================
+  // PASTE THIS MISSING PART HERE
+  // ==========================================
+
+  // ===== HELP DIALOG LOGIC =====
+  const helpBtn = document.getElementById("helpBtn");
+  const helpDialog = document.getElementById("helpDialog");
+  const closeHelpBtn = document.getElementById("closeHelpBtn");
+
+  if (helpBtn && helpDialog && closeHelpBtn) {
+    helpBtn.addEventListener("click", () => {
+      helpDialog.showModal();
+    });
+
+    closeHelpBtn.addEventListener("click", () => {
+      helpDialog.close();
+    });
+
+    // Optional: Close if clicking outside the modal box (backdrop)
+    helpDialog.addEventListener("click", (e) => {
+      const rect = helpDialog.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        helpDialog.close();
+      }
+    });
+  }
 </script>
 
 </body>
